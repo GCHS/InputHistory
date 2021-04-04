@@ -18,15 +18,21 @@ namespace InputHistory {
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window {
-		List<RawKeyEventArgs> LiveEvents = new();
+		List<HistoryEntry> LiveEvents = new();
 		public MainWindow() {
 			InitializeComponent();
+			CompositionTarget.Rendering += CompositionTarget_Rendering;
 		}
-		public void KListenerKeyDown(object sender, RawKeyEventArgs args) {
 
+		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
+			foreach(var ev in LiveEvents)	ev.Update();
+		}
+
+		public void KListenerKeyDown(object sender, RawKeyEventArgs args) {
+			LiveEvents.Add(new(args, HistoryContainer, LiveEvents.Select(e => e.KeyEvent.Key).ToArray(), Array.Empty<MouseButton>()));
 		}
 		public void KListenerKeyUp(object sender, RawKeyEventArgs args) {
-
+			LiveEvents = LiveEvents.Where(e => e.KeyEvent.Key != args.Key).ToList();
 		}
 	}
 }

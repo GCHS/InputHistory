@@ -14,8 +14,8 @@ namespace InputHistory {
 		readonly KeyboardListener KListener = new();
 
     private void Application_Startup(object sender, StartupEventArgs e) {
-      KListener.KeyDown += new RawKeyEventHandler(((MainWindow)MainWindow).KListenerKeyDown);
-      KListener.KeyUp += new RawKeyEventHandler(((MainWindow)MainWindow).KListenerKeyUp);
+      KListener.KeyDown += new RawKeyEventHandler((s, e) => { if(MainWindow is not null) ((MainWindow)MainWindow).KListenerKeyDown(s, e); });
+      KListener.KeyUp += new RawKeyEventHandler((s, e) => { if(MainWindow is not null) ((MainWindow)MainWindow).KListenerKeyUp(s, e); });
     }
 
     private void Application_Exit(object sender, ExitEventArgs e) {

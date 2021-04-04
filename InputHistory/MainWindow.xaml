@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:InputHistory"
         mc:Ignorable="d"
         Title="InputHistory" Height="450" Width="800">
-    <Grid x:Name="HistoryContainer">
+  <Grid>
+		<StackPanel x:Name="HistoryContainer" Orientation="Horizontal">
 
-    </Grid>
+		</StackPanel>
+	</Grid>
 </Window>
