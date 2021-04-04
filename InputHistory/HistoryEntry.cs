@@ -12,11 +12,12 @@ using static InputHistory.BindingName;
 
 namespace InputHistory {
 	class HistoryEntry {
-		public readonly RawKeyEventArgs KeyEvent;
+		public readonly Key Key;
 		private readonly Label durationMillis;
 		private readonly Stopwatch timer;
 
 		private static readonly Dictionary<Key, BindingName> KbNames = new() {
+			{Key.None, new("")},
 			{Key.W, new("Forward")},
 			{Key.A, new("Leftward")},
 			{Key.S, new("Backward")},
@@ -42,16 +43,16 @@ namespace InputHistory {
 			{MouseButton.XButton2, new("Equip Left Keyblade")}
 		};
 		
-		public HistoryEntry(in RawKeyEventArgs args, Panel container, in Key[] pressedKeys, in MouseButton[] pressedButtons) {
+		public HistoryEntry(in Key key, Panel container, in Key[] pressedKeys, in MouseButton[] pressedButtons) {
 			timer = Stopwatch.StartNew();
-			KeyEvent = args;
+			Key = key;
 			Grid entryContainer = new();
 			entryContainer.RowDefinitions.Add(new());
 			entryContainer.RowDefinitions.Add(new());
 
 			Label name = new();
 			name.SetValue(Grid.RowProperty, 0);
-			name.Content = KbNames.TryGetValue(args.Key, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "";
+			name.Content = KbNames.TryGetValue(Key, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "Fatfinger";
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			entryContainer.Children.Add(name);
 
