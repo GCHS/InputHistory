@@ -48,15 +48,16 @@ namespace InputHistory {
 			Grid entryContainer = new();
 			entryContainer.RowDefinitions.Add(new());
 			entryContainer.RowDefinitions.Add(new());
-			entryContainer.HorizontalAlignment = HorizontalAlignment.Right;
 
 			Label name = new();
 			name.SetValue(Grid.RowProperty, 0);
 			name.Content = KbNames.TryGetValue(args.Key, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "";
+			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			entryContainer.Children.Add(name);
 
 			durationMillis = new();
 			durationMillis.SetValue(Grid.RowProperty, 1);
+			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			entryContainer.Children.Add(durationMillis);
 
 			container.Children.Add(entryContainer);
