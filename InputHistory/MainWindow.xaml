@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="InputHistory" Height="450" Width="800">
   <Grid>
-		<StackPanel x:Name="HistoryContainer" Orientation="Horizontal">
+		<StackPanel x:Name="HistoryContainer" Orientation="Horizontal" HorizontalAlignment="Right">
 
 		</StackPanel>
 	</Grid>
