@@ -29,7 +29,8 @@ namespace InputHistory {
 		}
 
 		public void KListenerKeyDown(object sender, RawKeyEventArgs args) {
-			LiveEvents.Add(new(args, HistoryContainer, LiveEvents.Select(e => e.KeyEvent.Key).ToArray(), Array.Empty<MouseButton>()));
+			if(!LiveEvents.Where(e => e.KeyEvent.Key == args.Key).Any())
+				LiveEvents.Add(new(args, HistoryContainer, LiveEvents.Select(e => e.KeyEvent.Key).ToArray(), Array.Empty<MouseButton>()));
 		}
 		public void KListenerKeyUp(object sender, RawKeyEventArgs args) {
 			LiveEvents = LiveEvents.Where(e => e.KeyEvent.Key != args.Key).ToList();
