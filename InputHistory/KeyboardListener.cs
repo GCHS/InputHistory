@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 // https://gist.github.com/Ciantic/471698
 
@@ -89,7 +90,8 @@ namespace InputHistory {
               (wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_KEYDOWN ||
               wParam.ToUInt32() == (int)InterceptKeys.KeyEvent.WM_SYSKEYDOWN));
 
-          hookedKeyboardCallbackAsync.BeginInvoke((InterceptKeys.KeyEvent)wParam.ToUInt32(), Marshal.ReadInt32(lParam), chars, null, null);
+          Task.Run(() => hookedKeyboardCallbackAsync((InterceptKeys.KeyEvent)wParam.ToUInt32(), Marshal.ReadInt32(lParam), chars));
+          
         }
 
       return InterceptKeys.CallNextHookEx(hookId, nCode, wParam, lParam);
