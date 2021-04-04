@@ -18,8 +18,15 @@ namespace InputHistory {
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window {
+		List<RawKeyEventArgs> LiveEvents = new();
 		public MainWindow() {
 			InitializeComponent();
+		}
+		public void KListenerKeyDown(object sender, RawKeyEventArgs args) {
+
+		}
+		public void KListenerKeyUp(object sender, RawKeyEventArgs args) {
+
 		}
 	}
 }
