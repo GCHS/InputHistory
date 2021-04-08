@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:InputHistory"
         mc:Ignorable="d"
-        Title="InputHistory" Height="450" Width="800">
+        Title="InputHistory" Height="450" Width="800" Loaded="Window_Loaded">
   <Grid>
 		<StackPanel x:Name="HistoryContainer" Orientation="Horizontal" HorizontalAlignment="Right">
 

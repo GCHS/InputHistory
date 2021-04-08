@@ -18,7 +18,8 @@ namespace InputHistory {
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window {
-		List<HistoryEntry> LiveEvents = new();
+		readonly List<HistoryEntry> LiveEvents = new();
+		RawInputHandler RawInputHandler;
 		public MainWindow() {
 			InitializeComponent();
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
@@ -38,6 +39,10 @@ namespace InputHistory {
 		}
 		public void KListenerKeyUp(object sender, RawKeyEventArgs args) {
 			LiveEvents.RemoveAll(e => e.Key == args.Key);
+		}
+
+		private void Window_Loaded(object sender, RoutedEventArgs e) {
+			RawInputHandler = new(this);
 		}
 	}
 }
