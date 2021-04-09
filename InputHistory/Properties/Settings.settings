@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="BgColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Magenta</Value>
+      <Value Profile="(Default)">White</Value>
     </Setting>
     <Setting Name="FontName" Type="System.String" Scope="User">
       <Value Profile="(Default)">KH2 ALL MENU</Value>
