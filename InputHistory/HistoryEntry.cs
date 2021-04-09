@@ -58,30 +58,32 @@ namespace InputHistory {
 		}
 
 		private void ConfigureUI(string eventName, Panel container, Control copySettingsFrom) {
-			Grid entryContainer = new();
+			Grid entryContainer = new() { Margin = new Thickness(0) };
 			entryContainer.RowDefinitions.Add(new());
 			entryContainer.RowDefinitions.Add(new());
 
-			Label name = new();
-			name.FontFamily = copySettingsFrom.FontFamily;
-			name.FontSize   = copySettingsFrom.FontSize;
-			name.Foreground = copySettingsFrom.Foreground;
+			Label name = new() {
+				FontFamily = copySettingsFrom.FontFamily,
+				FontSize = copySettingsFrom.FontSize,
+				Foreground = copySettingsFrom.Foreground,
+				Content = eventName,
+				Padding = new Thickness(0),
+				Margin = new Thickness(8, 0, 8, 0),
+				ClipToBounds = false
+			};
 			name.SetValue(Grid.RowProperty, 0);
-			name.Content = eventName;
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
-			name.Padding = new Thickness(0);
-			name.Margin = new Thickness(4, 0, 4, 0);
-			name.FontStyle = (FontStyle)new FontStyleConverter().ConvertFromInvariantString("Italic");
 			
 			entryContainer.Children.Add(name);
 
 			durationMillis.FontFamily = copySettingsFrom.FontFamily;
 			durationMillis.FontSize   = copySettingsFrom.FontSize;
 			durationMillis.Foreground = copySettingsFrom.Foreground;
+			durationMillis.Padding = new Thickness(0);
+			durationMillis.Margin = new Thickness(8, 0, 8, 0);
 			durationMillis.SetValue(Grid.RowProperty, 1);
 			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
-			durationMillis.Padding = new Thickness(0);
-			durationMillis.Margin = new Thickness(4, 0, 4, 0);
+			durationMillis.ClipToBounds = false;
 			entryContainer.Children.Add(durationMillis);
 
 			container.Children.Add(entryContainer);
