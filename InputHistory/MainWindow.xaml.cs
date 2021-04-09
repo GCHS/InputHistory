@@ -22,6 +22,7 @@ namespace InputHistory {
 	public partial class MainWindow : Window {
 		readonly List<HistoryEntry> LiveEvents = new();
 		readonly double WidestCharWidth;
+		readonly int MaxEntries;
 		RawInputHandler RawInputHandler;
 		public MainWindow() {
 			InitializeComponent();
@@ -30,6 +31,7 @@ namespace InputHistory {
 			//FontSize = double.Parse((string)Properties.Settings.Default.Properties["FontSize"].DefaultValue);
 			Background = new SolidColorBrush((Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString((string)Properties.Settings.Default.Properties["BgColor"].DefaultValue));
 			Foreground = new SolidColorBrush((Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString((string)Properties.Settings.Default.Properties["FontColor"].DefaultValue));
+			MaxEntries = int.Parse((string)Properties.Settings.Default.Properties["MaxEntries"].DefaultValue);
 
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
@@ -48,6 +50,9 @@ namespace InputHistory {
 				LiveEvents.Add(new(Key.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharWidth));
 			}
 			foreach(var ev in LiveEvents)	ev.Update();
+			if(HistoryContainer.Children.Count > MaxEntries) {
+				HistoryContainer.Children.RemoveRange(0, HistoryContainer.Children.Count - MaxEntries);
+			}
 		}
 		private IEnumerable<EventCode> CurrentlyActiveCodes => LiveEvents.Select(e => e.Code);
 

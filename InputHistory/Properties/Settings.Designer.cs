@@ -70,5 +70,17 @@ namespace InputHistory.Properties {
                 this["FontColor"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127")]
+        public int MaxEntries {
+            get {
+                return ((int)(this["MaxEntries"]));
+            }
+            set {
+                this["MaxEntries"] = value;
+            }
+        }
     }
 }

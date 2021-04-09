@@ -14,5 +14,8 @@
     <Setting Name="FontColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Gray</Value>
     </Setting>
+    <Setting Name="MaxEntries" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">127</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
