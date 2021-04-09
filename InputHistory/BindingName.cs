@@ -9,23 +9,11 @@ namespace InputHistory {
 	class BindingName {
 		public class Override {
 			readonly public string Name;
-			readonly public Key[] Keys;
-			readonly public MouseButton[] MouseButtons;
+			readonly public IEnumerable<EventCode> Codes;
 
-			public Override(string name, Key[] keys, MouseButton[] mouseButtons) {
+			public Override(string name, IEnumerable<EventCode> codes) {
 				Name = name;
-				Keys = keys;
-				MouseButtons = mouseButtons;
-			}
-			public Override(string name, Key[] keys) {
-				Name = name;
-				Keys = keys;
-				MouseButtons = Array.Empty<MouseButton>();
-			}
-			public Override(string name, MouseButton[] mouseButtons) {
-				Name = name;
-				Keys = Array.Empty<Key>();
-				MouseButtons = mouseButtons;
+				Codes = codes;
 			}
 		}
 		private readonly string Name;
@@ -40,7 +28,7 @@ namespace InputHistory {
 			Overrides = Array.Empty<Override>();
 		}
 
-		public string GetName(IEnumerable<Key> pressedKeys, IEnumerable<MouseButton> pressedButtons) =>
-			Overrides.Where(o => o.Keys.Intersect(pressedKeys).Any() || o.MouseButtons.Intersect(pressedButtons).Any()).FirstOrDefault()?.Name ?? Name;
+		public string GetName(IEnumerable<EventCode> pressed) =>
+			Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault()?.Name ?? Name;
 	}
 }

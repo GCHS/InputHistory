@@ -25,39 +25,38 @@ namespace InputHistory {
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 		}
 
-		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
-			if(LiveEvents.Count == 0) {
-				LiveEvents.Add(new(Key.None, HistoryContainer, Array.Empty<Key>(), Array.Empty<MouseButton>()));
-			}
-			foreach(var ev in LiveEvents)	ev.Update();
-		}
-
-		public void KListenerKeyDown(object sender, RawKeyEventArgs args) {
-			LiveEvents.RemoveAll(e => e.Key == Key.None);
-			if(!CurrentlyPressedKeys.Where(k => k == args.Key).Any())
-				LiveEvents.Add(new(args.Key, HistoryContainer, CurrentlyPressedKeys, CurrentlyPressedMouseButtons));
-		}
-		public void KListenerKeyUp(object sender, RawKeyEventArgs args) {
-			LiveEvents.RemoveAll(e => e.IsKey == true && e.Key == args.Key);
-		}
-
-		private IEnumerable<Key> CurrentlyPressedKeys => LiveEvents.Where(e => e.IsKey).Select(e => e.Key);
-		private IEnumerable<MouseButton> CurrentlyPressedMouseButtons => LiveEvents.Where(e => !e.IsKey).Select(e => e.Button);
-
 		private void Window_Loaded(object sender, RoutedEventArgs e) {
 			RawInputHandler = new(this);
 			RawInputHandler.MouseDown += RawInputHandler_MouseDown;
 			RawInputHandler.MouseUp += RawInputHandler_MouseUp;
+			RawInputHandler.MouseScrolled += RawInputHandler_MouseScrolled;
 		}
 
-		private void RawInputHandler_MouseUp(MouseButton released) {
-			LiveEvents.RemoveAll(e => e.IsKey == false && e.Button == released);
+		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
+			if(LiveEvents.Count == 0) {
+				LiveEvents.Add(new(Key.None, HistoryContainer, Array.Empty<EventCode>()));
+			}
+			foreach(var ev in LiveEvents)	ev.Update();
 		}
+		private IEnumerable<EventCode> CurrentlyActiveCodes => LiveEvents.Select(e => e.Code);
 
-		private void RawInputHandler_MouseDown(MouseButton pressed) {
-			LiveEvents.RemoveAll(e => e.Key == Key.None);
-			if(!CurrentlyPressedMouseButtons.Where(b => b == pressed).Any())
-				LiveEvents.Add(new HistoryEntry(pressed, HistoryContainer, CurrentlyPressedKeys, CurrentlyPressedMouseButtons));
+		private void AddEvent(EventCode code) {
+			FinalizeEvent(Key.None);
+			if(!CurrentlyActiveCodes.Where(c => c == code).Any())
+				LiveEvents.Add(new HistoryEntry(code, HistoryContainer, CurrentlyActiveCodes));
+		}
+		private void FinalizeEvent(EventCode code) => LiveEvents.RemoveAll(e => e.Code == code);
+
+		public void KListenerKeyDown(object sender, RawKeyEventArgs args) => AddEvent(args.Key);
+		public void KListenerKeyUp(object sender, RawKeyEventArgs args) => FinalizeEvent(args.Key);
+		private void RawInputHandler_MouseUp(MouseButton released) => FinalizeEvent(released);
+		private void RawInputHandler_MouseDown(MouseButton pressed) => AddEvent(pressed);
+		private void RawInputHandler_MouseScrolled(short dx, short dy) {
+			FinalizeEvent(Key.None);
+			if(dy < 0) _ = new HistoryEntry(EventCode.ScrollDown,  HistoryContainer, CurrentlyActiveCodes);
+			if(dy > 0) _ = new HistoryEntry(EventCode.ScrollUp,    HistoryContainer, CurrentlyActiveCodes);
+			if(dx < 0) _ = new HistoryEntry(EventCode.ScrollLeft,  HistoryContainer, CurrentlyActiveCodes);
+			if(dx > 0) _ = new HistoryEntry(EventCode.ScrollRight, HistoryContainer, CurrentlyActiveCodes);
 		}
 	}
 }

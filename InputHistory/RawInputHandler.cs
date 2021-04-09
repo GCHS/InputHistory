@@ -825,9 +825,6 @@ namespace InputHistory {
 		private enum Direction {
 			Up, Down
 		}
-		public enum WheelOrientation {
-			Vertical, Horizontal
-		}
 
 		private readonly RAWINPUTDEVICE[] DevicesToRegisterFor = new RAWINPUTDEVICE[] {
 					new(){
@@ -861,9 +858,11 @@ namespace InputHistory {
 
 		public delegate void RawMouseDown(MouseButton pressed);
 		public delegate void RawMouseUp(MouseButton released);
+		public delegate void RawMouseScrolled(short dx, short dy);
 
 		public event RawMouseDown? MouseDown;
 		public event RawMouseUp? MouseUp;
+		public event RawMouseScrolled? MouseScrolled;
 
 		public RawInputHandler(Window messageReceiver) { //pass in the window you want the events to go to
 			var targetHwnd = new WindowInteropHelper(messageReceiver).Handle;
@@ -915,6 +914,12 @@ namespace InputHistory {
 												break;
 										}
 									}
+								}
+								if((events & MouseEventFlags.WHEEL) != MouseEventFlags.NONE) {
+									MouseScrolled?.Invoke(0, (short)i.data.mouse.Anonymous.Anonymous.usButtonData);
+								}
+								if((events & MouseEventFlags.HWHEEL) != MouseEventFlags.NONE) {
+									MouseScrolled?.Invoke((short)i.data.mouse.Anonymous.Anonymous.usButtonData, 0);
 								}
 								break;
 							case DeviceType.KEYBOARD:

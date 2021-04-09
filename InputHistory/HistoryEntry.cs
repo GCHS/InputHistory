@@ -11,14 +11,12 @@ using System.Windows.Input;
 using static InputHistory.BindingName;
 
 namespace InputHistory {
-	class HistoryEntry {
-		public readonly Key Key;
-		public readonly MouseButton Button;
-		public readonly bool IsKey;
+	partial class HistoryEntry {
+		public readonly EventCode Code;
 		private readonly Label durationMillis;
 		private readonly Stopwatch timer;
 
-		private static readonly Dictionary<Key, BindingName> KbNames = new() {
+		private static readonly Dictionary<EventCode, BindingName> Names = new() {
 			{Key.None, new("")},
 			{Key.W, new("Forward")},
 			{Key.A, new("Leftward")},
@@ -34,15 +32,15 @@ namespace InputHistory {
 			{Key.N,  new("Open Camera")},
 			{Key.D3, new("Open Camera")},
 			{Key.Escape,  new("Open PC Menu")},
-			{Key.Space,   new("Jump", new Override[] {new("Shortcut 4", new[]{Key.LeftShift})})},
-			{Key.LeftAlt, new("Situation Command", new Override[] {new("Shortcut 2", new[]{Key.LeftShift})})},
-		};
-		private static readonly Dictionary<MouseButton, BindingName> MbNames = new() {
-			{MouseButton.Left,     new("Attack", new Override[] {new("Shortcut 1", new[]{Key.LeftShift})})},
-			{MouseButton.Right,    new("Block",  new Override[] {new("Shortcut 3", new[]{Key.LeftShift}), new("Dodge", new[]{Key.W, Key.A, Key.S, Key.D})})},
+			{Key.Space,   new("Jump", new Override[] {new("Shortcut 4", new EventCode[]{Key.LeftShift})})},
+			{Key.LeftAlt, new("Situation Command", new Override[] {new("Shortcut 2", new EventCode[]{Key.LeftShift})})},
+			{MouseButton.Left,     new("Attack", new Override[] {new("Shortcut 1", new EventCode[]{Key.LeftShift})})},
+			{MouseButton.Right,    new("Block",  new Override[] {new("Shortcut 3", new EventCode[]{Key.LeftShift}), new("Dodge", new EventCode[]{Key.W, Key.A, Key.S, Key.D})})},
 			{MouseButton.Middle,   new("Lock On")},
 			{MouseButton.XButton1, new("Equip Right Keyblade")},
-			{MouseButton.XButton2, new("Equip Left Keyblade")}
+			{MouseButton.XButton2, new("Equip Left Keyblade")},
+			{EventCode.ScrollDown, new("Menu Down")},
+			{EventCode.ScrollUp,   new("Menu Up")},
 		};
 		
 		private HistoryEntry() {
@@ -50,17 +48,9 @@ namespace InputHistory {
 			durationMillis = new();
 		}
 
-		public HistoryEntry(in Key key, Panel container, in IEnumerable<Key> pressedKeys, in IEnumerable<MouseButton> pressedButtons) : this() {
-			IsKey = true;
-			Key = key;
-			var name = KbNames.TryGetValue(Key, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "Fatfinger";
-			ConfigureUI(name, container);
-			Update();
-		}
-		public HistoryEntry(in MouseButton button, Panel container, in IEnumerable<Key> pressedKeys, in IEnumerable<MouseButton> pressedButtons) : this() {
-			IsKey = false;
-			Button = button;
-			var name = MbNames.TryGetValue(Button, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "Fatfinger";
+		public HistoryEntry(in EventCode code, Panel container, in IEnumerable<EventCode> liveEvents) : this() {
+			Code = code;
+			var name = Names.TryGetValue(Code, out var bindingName) ? bindingName.GetName(liveEvents) : "Fatfinger";
 			ConfigureUI(name, container);
 			Update();
 		}
