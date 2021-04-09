@@ -13,6 +13,8 @@ using static InputHistory.BindingName;
 namespace InputHistory {
 	class HistoryEntry {
 		public readonly Key Key;
+		public readonly MouseButton Button;
+		public readonly bool IsKey;
 		private readonly Label durationMillis;
 		private readonly Stopwatch timer;
 
@@ -43,27 +45,42 @@ namespace InputHistory {
 			{MouseButton.XButton2, new("Equip Left Keyblade")}
 		};
 		
-		public HistoryEntry(in Key key, Panel container, in Key[] pressedKeys, in MouseButton[] pressedButtons) {
+		private HistoryEntry() {
 			timer = Stopwatch.StartNew();
+			durationMillis = new();
+		}
+
+		public HistoryEntry(in Key key, Panel container, in IEnumerable<Key> pressedKeys, in IEnumerable<MouseButton> pressedButtons) : this() {
+			IsKey = true;
 			Key = key;
+			var name = KbNames.TryGetValue(Key, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "Fatfinger";
+			ConfigureUI(name, container);
+			Update();
+		}
+		public HistoryEntry(in MouseButton button, Panel container, in IEnumerable<Key> pressedKeys, in IEnumerable<MouseButton> pressedButtons) : this() {
+			IsKey = false;
+			Button = button;
+			var name = MbNames.TryGetValue(Button, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "Fatfinger";
+			ConfigureUI(name, container);
+			Update();
+		}
+
+		private void ConfigureUI(string eventName, Panel container) {
 			Grid entryContainer = new();
 			entryContainer.RowDefinitions.Add(new());
 			entryContainer.RowDefinitions.Add(new());
 
 			Label name = new();
 			name.SetValue(Grid.RowProperty, 0);
-			name.Content = KbNames.TryGetValue(Key, out var bindingName) ? bindingName.GetName(pressedKeys, pressedButtons) : "Fatfinger";
+			name.Content = eventName;
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			entryContainer.Children.Add(name);
 
-			durationMillis = new();
 			durationMillis.SetValue(Grid.RowProperty, 1);
 			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			entryContainer.Children.Add(durationMillis);
 
 			container.Children.Add(entryContainer);
-
-			Update();
 		}
 		public void Update() {
 			durationMillis.Content = $"{timer.ElapsedMilliseconds}ms";

@@ -34,15 +34,30 @@ namespace InputHistory {
 
 		public void KListenerKeyDown(object sender, RawKeyEventArgs args) {
 			LiveEvents.RemoveAll(e => e.Key == Key.None);
-			if(!LiveEvents.Where(e => e.Key == args.Key).Any())
-				LiveEvents.Add(new(args.Key, HistoryContainer, LiveEvents.Select(e => e.Key).ToArray(), Array.Empty<MouseButton>()));
+			if(!CurrentlyPressedKeys.Where(k => k == args.Key).Any())
+				LiveEvents.Add(new(args.Key, HistoryContainer, CurrentlyPressedKeys, CurrentlyPressedMouseButtons));
 		}
 		public void KListenerKeyUp(object sender, RawKeyEventArgs args) {
-			LiveEvents.RemoveAll(e => e.Key == args.Key);
+			LiveEvents.RemoveAll(e => e.IsKey == true && e.Key == args.Key);
 		}
+
+		private IEnumerable<Key> CurrentlyPressedKeys => LiveEvents.Where(e => e.IsKey).Select(e => e.Key);
+		private IEnumerable<MouseButton> CurrentlyPressedMouseButtons => LiveEvents.Where(e => !e.IsKey).Select(e => e.Button);
 
 		private void Window_Loaded(object sender, RoutedEventArgs e) {
 			RawInputHandler = new(this);
+			RawInputHandler.MouseDown += RawInputHandler_MouseDown;
+			RawInputHandler.MouseUp += RawInputHandler_MouseUp;
+		}
+
+		private void RawInputHandler_MouseUp(MouseButton released) {
+			LiveEvents.RemoveAll(e => e.IsKey == false && e.Button == released);
+		}
+
+		private void RawInputHandler_MouseDown(MouseButton pressed) {
+			LiveEvents.RemoveAll(e => e.Key == Key.None);
+			if(!CurrentlyPressedMouseButtons.Where(b => b == pressed).Any())
+				LiveEvents.Add(new HistoryEntry(pressed, HistoryContainer, CurrentlyPressedKeys, CurrentlyPressedMouseButtons));
 		}
 	}
 }

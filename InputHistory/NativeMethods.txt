@@ -1,3 +1,5 @@
 RegisterRawInputDevices
 GetRawInputDeviceList
 GetRawInputDeviceInfo
+GetRawInputData
+GetRawInputBuffer

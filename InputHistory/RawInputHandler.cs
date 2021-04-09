@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using Microsoft.Windows.Sdk;
 
@@ -790,6 +791,43 @@ namespace InputHistory {
 			MS_BTH_HF_DIALNUMBER              = 0x21,
 			MS_BTH_HF_DIALMEMORY              = 0x22,
 		}
+		enum DeviceType : int {
+			MOUSE = 0,
+			KEYBOARD = 1,
+			HID = 2 //other
+		}
+		[Flags]
+		enum MouseEventFlags : ushort {
+			NONE               = 0x0000,
+			LEFT_BUTTON_DOWN   = 0x0001,  // Left Button changed to down.
+			LEFT_BUTTON_UP     = 0x0002,  // Left Button changed to up.
+			RIGHT_BUTTON_DOWN  = 0x0004,  // Right Button changed to down.
+			RIGHT_BUTTON_UP    = 0x0008,  // Right Button changed to up.
+			MIDDLE_BUTTON_DOWN = 0x0010,  // Middle Button changed to down.
+			MIDDLE_BUTTON_UP   = 0x0020,  // Middle Button changed to up.
+			
+			BUTTON_1_DOWN      = LEFT_BUTTON_DOWN	 ,
+			BUTTON_1_UP        = LEFT_BUTTON_UP		 ,
+			BUTTON_2_DOWN      = RIGHT_BUTTON_DOWN ,
+			BUTTON_2_UP        = RIGHT_BUTTON_UP	 ,
+			BUTTON_3_DOWN      = MIDDLE_BUTTON_DOWN,
+			BUTTON_3_UP        = MIDDLE_BUTTON_UP  ,
+			
+			BUTTON_4_DOWN      = 0x0040,
+			BUTTON_4_UP        = 0x0080,
+			BUTTON_5_DOWN      = 0x0100,
+			BUTTON_5_UP        = 0x0200,
+			
+			WHEEL  = 0x0400, //If usButtonFlags has WHEEL, the wheel delta is stored in usButtonData. Take it as a signed value.
+			HWHEEL = 0x0800
+		}
+
+		private enum Direction {
+			Up, Down
+		}
+		public enum WheelOrientation {
+			Vertical, Horizontal
+		}
 
 		private readonly RAWINPUTDEVICE[] DevicesToRegisterFor = new RAWINPUTDEVICE[] {
 					new(){
@@ -805,6 +843,27 @@ namespace InputHistory {
 						usUsage = (ushort)UsageID.GENERIC_GAMEPAD,
 					},
 				};
+
+		private readonly (MouseEventFlags, MouseButton, Direction)[] FlagToButton = new (MouseEventFlags, MouseButton, Direction)[] {
+			(MouseEventFlags.LEFT_BUTTON_DOWN  , MouseButton.Left    , Direction.Down),
+			(MouseEventFlags.LEFT_BUTTON_UP    , MouseButton.Left    , Direction.Up),
+			(MouseEventFlags.RIGHT_BUTTON_DOWN , MouseButton.Right   , Direction.Down),
+			(MouseEventFlags.RIGHT_BUTTON_UP   , MouseButton.Right   , Direction.Up),
+			(MouseEventFlags.MIDDLE_BUTTON_DOWN, MouseButton.Middle  , Direction.Down),
+			(MouseEventFlags.MIDDLE_BUTTON_UP  , MouseButton.Middle  , Direction.Up),
+			(MouseEventFlags.BUTTON_4_DOWN     , MouseButton.XButton1, Direction.Down),
+			(MouseEventFlags.BUTTON_4_UP       , MouseButton.XButton1, Direction.Up),
+			(MouseEventFlags.BUTTON_5_DOWN     , MouseButton.XButton2, Direction.Down),
+			(MouseEventFlags.BUTTON_5_UP       , MouseButton.XButton2, Direction.Up),
+		};
+
+		private const int WM_INPUT = 0x00FF; //https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-input
+
+		public delegate void RawMouseDown(MouseButton pressed);
+		public delegate void RawMouseUp(MouseButton released);
+
+		public event RawMouseDown? MouseDown;
+		public event RawMouseUp? MouseUp;
 
 		public RawInputHandler(Window messageReceiver) { //pass in the window you want the events to go to
 			var targetHwnd = new WindowInteropHelper(messageReceiver).Handle;
@@ -831,6 +890,42 @@ namespace InputHistory {
 			}
 		}
 		private IntPtr HandleWM_Input(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
+			if(msg == WM_INPUT) {
+				unsafe {
+					uint rawInputCount = 0;
+					var rawInputHandle = new HRAWINPUT((nint)lParam.ToInt64());
+					PInvoke.GetRawInputData(rawInputHandle, GetRawInputData_uiCommandFlags.RID_INPUT, null, ref rawInputCount, (uint)sizeof(RAWINPUTHEADER));//get count of RAWINPUTs
+					var data = new RAWINPUT[rawInputCount];
+					fixed(RAWINPUT* dataStart = &data[0]) {
+						PInvoke.GetRawInputData(rawInputHandle, GetRawInputData_uiCommandFlags.RID_INPUT, dataStart, ref rawInputCount, (uint)sizeof(RAWINPUTHEADER));//actual data copy
+					}
+
+					foreach(var i in data) {
+						switch((DeviceType)i.header.dwType) {
+							case DeviceType.MOUSE:
+								var events = (MouseEventFlags)i.data.mouse.Anonymous.Anonymous.usButtonFlags;
+								foreach(var (flag, button, direction) in FlagToButton) {
+									if((flag & events) != MouseEventFlags.NONE) {
+										switch(direction) {
+											case Direction.Up:
+												MouseUp?.Invoke(button);
+												break;
+											case Direction.Down:
+												MouseDown?.Invoke(button);
+												break;
+										}
+									}
+								}
+								break;
+							case DeviceType.KEYBOARD:
+								break;
+							case DeviceType.HID:
+								break;
+						}
+					}
+				}
+				handled = true;
+			}
 			return IntPtr.Zero;
 		}
 	}

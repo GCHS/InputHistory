@@ -40,7 +40,7 @@ namespace InputHistory {
 			Overrides = Array.Empty<Override>();
 		}
 
-		public string GetName(Key[] pressedKeys, MouseButton[] pressedButtons) =>
+		public string GetName(IEnumerable<Key> pressedKeys, IEnumerable<MouseButton> pressedButtons) =>
 			Overrides.Where(o => o.Keys.Intersect(pressedKeys).Any() || o.MouseButtons.Intersect(pressedButtons).Any()).FirstOrDefault()?.Name ?? Name;
 	}
 }
