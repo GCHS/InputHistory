@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-
+using System.Windows.Media;
 using static InputHistory.BindingName;
 
 namespace InputHistory {
@@ -48,26 +48,33 @@ namespace InputHistory {
 			durationMillis = new();
 		}
 
-		public HistoryEntry(in EventCode code, Panel container, in IEnumerable<EventCode> liveEvents) : this() {
+		public HistoryEntry(in EventCode code, in IEnumerable<EventCode> liveEvents, Panel container, Control copySettingsFrom) : this() {
 			Code = code;
 			var name = Names.TryGetValue(Code, out var bindingName) ? bindingName.GetName(liveEvents) : "Fatfinger";
-			ConfigureUI(name, container);
+			ConfigureUI(name, container, copySettingsFrom);
 			Update();
 		}
 
-		private void ConfigureUI(string eventName, Panel container) {
+		private void ConfigureUI(string eventName, Panel container, Control copySettingsFrom) {
 			Grid entryContainer = new();
 			entryContainer.RowDefinitions.Add(new());
 			entryContainer.RowDefinitions.Add(new());
 
 			Label name = new();
+			name.FontFamily = copySettingsFrom.FontFamily;
+			name.FontSize   = copySettingsFrom.FontSize;
+			name.Foreground = copySettingsFrom.Foreground;
 			name.SetValue(Grid.RowProperty, 0);
 			name.Content = eventName;
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			name.Padding = new Thickness(0);
 			name.Margin = new Thickness(4, 0, 4, 0);
+			
 			entryContainer.Children.Add(name);
 
+			durationMillis.FontFamily = copySettingsFrom.FontFamily;
+			durationMillis.FontSize   = copySettingsFrom.FontSize;
+			durationMillis.Foreground = copySettingsFrom.Foreground;
 			durationMillis.SetValue(Grid.RowProperty, 1);
 			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			durationMillis.Padding = new Thickness(0);
