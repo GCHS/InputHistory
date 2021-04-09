@@ -64,10 +64,14 @@ namespace InputHistory {
 			name.SetValue(Grid.RowProperty, 0);
 			name.Content = eventName;
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
+			name.Padding = new Thickness(0);
+			name.Margin = new Thickness(4, 0, 4, 0);
 			entryContainer.Children.Add(name);
 
 			durationMillis.SetValue(Grid.RowProperty, 1);
 			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
+			durationMillis.Padding = new Thickness(0);
+			durationMillis.Margin = new Thickness(4, 0, 4, 0);
 			entryContainer.Children.Add(durationMillis);
 
 			container.Children.Add(entryContainer);
