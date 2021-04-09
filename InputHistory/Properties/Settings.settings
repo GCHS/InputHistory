@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="BgColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">White</Value>
+      <Value Profile="(Default)">Black</Value>
     </Setting>
     <Setting Name="FontName" Type="System.String" Scope="User">
       <Value Profile="(Default)">KH2 ALL MENU</Value>
@@ -12,7 +12,7 @@
       <Value Profile="(Default)">20</Value>
     </Setting>
     <Setting Name="FontColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Gray</Value>
+      <Value Profile="(Default)">White</Value>
     </Setting>
     <Setting Name="MaxEntries" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">127</Value>
@@ -21,7 +21,7 @@
       <Value Profile="(Default)">720</Value>
     </Setting>
     <Setting Name="Height" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">100</Value>
+      <Value Profile="(Default)">104</Value>
     </Setting>
   </Settings>
 </SettingsFile>
