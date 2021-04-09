@@ -29,10 +29,11 @@ namespace InputHistory {
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 			//FontFamily = new FontFamily((string)Properties.Settings.Default.Properties["FontName"].DefaultValue);
 			//FontSize = double.Parse((string)Properties.Settings.Default.Properties["FontSize"].DefaultValue);
-			Background = new SolidColorBrush((Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString((string)Properties.Settings.Default.Properties["BgColor"].DefaultValue));
-			Foreground = new SolidColorBrush((Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString((string)Properties.Settings.Default.Properties["FontColor"].DefaultValue));
-			MaxEntries = int.Parse((string)Properties.Settings.Default.Properties["MaxEntries"].DefaultValue);
-
+			Background = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.BgColor.R, Properties.Settings.Default.BgColor.G, Properties.Settings.Default.BgColor.B));
+			Foreground = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.FontColor.R, Properties.Settings.Default.FontColor.G, Properties.Settings.Default.FontColor.B));
+			MaxEntries = Properties.Settings.Default.MaxEntries;
+			Width = Properties.Settings.Default.Width;
+			Height = Properties.Settings.Default.Height;
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
 			WidestCharWidth = glyphTypeface.CharacterToGlyphMap.Max(cg => glyphTypeface.AdvanceWidths[cg.Value]) * FontSize;
@@ -73,6 +74,12 @@ namespace InputHistory {
 			if(dy > 0) _ = new HistoryEntry(EventCode.ScrollUp,    CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
 			if(dx < 0) _ = new HistoryEntry(EventCode.ScrollLeft,  CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
 			if(dx > 0) _ = new HistoryEntry(EventCode.ScrollRight, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
+		}
+
+		private void Window_Closing(object sender, CancelEventArgs e) {
+			Properties.Settings.Default.Width = Width;
+			Properties.Settings.Default.Height = Height;
+			Properties.Settings.Default.Save();
 		}
 	}
 }

@@ -17,5 +17,11 @@
     <Setting Name="MaxEntries" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">127</Value>
     </Setting>
+    <Setting Name="Width" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">720</Value>
+    </Setting>
+    <Setting Name="Height" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
