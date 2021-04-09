@@ -6,7 +6,7 @@
       <Value Profile="(Default)">Magenta</Value>
     </Setting>
     <Setting Name="FontName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Arial</Value>
+      <Value Profile="(Default)">KH2 ALL MENU</Value>
     </Setting>
     <Setting Name="FontSize" Type="System.Double" Scope="User">
       <Value Profile="(Default)">20</Value>

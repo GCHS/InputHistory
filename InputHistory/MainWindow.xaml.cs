@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace InputHistory {
 	/// </summary>
 	public partial class MainWindow : Window {
 		readonly List<HistoryEntry> LiveEvents = new();
+		readonly double WidestCharWidth;
 		RawInputHandler RawInputHandler;
 		public MainWindow() {
 			InitializeComponent();
@@ -28,6 +30,10 @@ namespace InputHistory {
 			//FontSize = double.Parse((string)Properties.Settings.Default.Properties["FontSize"].DefaultValue);
 			Background = new SolidColorBrush((Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString((string)Properties.Settings.Default.Properties["BgColor"].DefaultValue));
 			Foreground = new SolidColorBrush((Color)TypeDescriptor.GetConverter(typeof(Color)).ConvertFromInvariantString((string)Properties.Settings.Default.Properties["FontColor"].DefaultValue));
+
+			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+			typeface.TryGetGlyphTypeface(out var glyphTypeface);
+			WidestCharWidth = glyphTypeface.CharacterToGlyphMap.Max(cg => glyphTypeface.AdvanceWidths[cg.Value]) * FontSize;
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e) {
@@ -39,7 +45,7 @@ namespace InputHistory {
 
 		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
 			if(LiveEvents.Count == 0) {
-				LiveEvents.Add(new(Key.None, Array.Empty<EventCode>(), HistoryContainer, this));
+				LiveEvents.Add(new(Key.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharWidth));
 			}
 			foreach(var ev in LiveEvents)	ev.Update();
 		}
@@ -48,7 +54,7 @@ namespace InputHistory {
 		private void AddEvent(EventCode code) {
 			FinalizeEvent(Key.None);
 			if(!CurrentlyActiveCodes.Where(c => c == code).Any())
-				LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this));
+				LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
 		}
 		private void FinalizeEvent(EventCode code) => LiveEvents.RemoveAll(e => e.Code == code);
 
@@ -58,10 +64,10 @@ namespace InputHistory {
 		private void RawInputHandler_MouseDown(MouseButton pressed) => AddEvent(pressed);
 		private void RawInputHandler_MouseScrolled(short dx, short dy) {
 			FinalizeEvent(Key.None);
-			if(dy < 0) _ = new HistoryEntry(EventCode.ScrollDown,  CurrentlyActiveCodes, HistoryContainer, this);
-			if(dy > 0) _ = new HistoryEntry(EventCode.ScrollUp,    CurrentlyActiveCodes, HistoryContainer, this);
-			if(dx < 0) _ = new HistoryEntry(EventCode.ScrollLeft,  CurrentlyActiveCodes, HistoryContainer, this);
-			if(dx > 0) _ = new HistoryEntry(EventCode.ScrollRight, CurrentlyActiveCodes, HistoryContainer, this);
+			if(dy < 0) _ = new HistoryEntry(EventCode.ScrollDown,  CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
+			if(dy > 0) _ = new HistoryEntry(EventCode.ScrollUp,    CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
+			if(dx < 0) _ = new HistoryEntry(EventCode.ScrollLeft,  CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
+			if(dx > 0) _ = new HistoryEntry(EventCode.ScrollRight, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
 		}
 	}
 }

@@ -9,6 +9,11 @@
       Title="InputHistory" Height="450" Width="800" Loaded="Window_Loaded"
 			FontFamily="{Binding Source={x:Static properties:Settings.Default}, Path=FontName}"
 			FontSize="{Binding Source={x:Static properties:Settings.Default},   Path=FontSize}">
+	<Window.ContextMenu>
+		<ContextMenu>
+			
+		</ContextMenu>
+	</Window.ContextMenu>
 	<Grid>
 		<StackPanel x:Name="HistoryContainer" Orientation="Horizontal" HorizontalAlignment="Right">
 

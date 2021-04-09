@@ -15,6 +15,7 @@ namespace InputHistory {
 		public readonly EventCode Code;
 		private readonly Label durationMillis;
 		private readonly Stopwatch timer;
+		private readonly double WidestCharWidth;
 
 		private static readonly Dictionary<EventCode, BindingName> Names = new() {
 			{Key.None, new("")},
@@ -48,10 +49,11 @@ namespace InputHistory {
 			durationMillis = new();
 		}
 
-		public HistoryEntry(in EventCode code, in IEnumerable<EventCode> liveEvents, Panel container, Control copySettingsFrom) : this() {
+		public HistoryEntry(in EventCode code, in IEnumerable<EventCode> liveEvents, Panel container, Control copySettingsFrom, double widestCharWidth) : this() {
 			Code = code;
 			var name = Names.TryGetValue(Code, out var bindingName) ? bindingName.GetName(liveEvents) : "Fatfinger";
 			ConfigureUI(name, container, copySettingsFrom);
+			WidestCharWidth = widestCharWidth;
 			Update();
 		}
 
@@ -69,6 +71,7 @@ namespace InputHistory {
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			name.Padding = new Thickness(0);
 			name.Margin = new Thickness(4, 0, 4, 0);
+			name.FontStyle = (FontStyle)new FontStyleConverter().ConvertFromInvariantString("Italic");
 			
 			entryContainer.Children.Add(name);
 
@@ -84,7 +87,10 @@ namespace InputHistory {
 			container.Children.Add(entryContainer);
 		}
 		public void Update() {
-			durationMillis.Content = $"{timer.ElapsedMilliseconds}ms";
+			var ms = timer.ElapsedMilliseconds;
+			var duration = $"{ms}ms";
+			durationMillis.Content = duration;
+			durationMillis.Width = WidestCharWidth * duration.Length;//make the label wide enough to accomommodate every char within being max width to keep the label from bouncing around in size as it counts up
 		}
 	}
 }
