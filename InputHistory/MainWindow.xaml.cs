@@ -57,6 +57,11 @@ namespace InputHistory {
 			if(HistoryContainer.Children.Count > MaxEntries) {
 				HistoryContainer.Children.RemoveRange(0, HistoryContainer.Children.Count - MaxEntries);
 			}
+			if(FinalizedEvents.Count + LiveEvents.Count > MaxEntries &&
+				/*ensure there's actually excess FinalizedEvents (just in case we somehow have a humongous amount of LiveEvents)*/
+				FinalizedEvents.Count > LiveEvents.Count + MaxEntries) {
+				FinalizedEvents.RemoveRange(0, FinalizedEvents.Count - LiveEvents.Count - MaxEntries);
+			}
 		}
 		private IEnumerable<EventCode> CurrentlyActiveCodes => LiveEvents.Select(e => e.Code);
 
