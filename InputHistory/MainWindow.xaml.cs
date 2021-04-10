@@ -25,6 +25,7 @@ namespace InputHistory {
 		readonly double WidestCharWidth;
 		readonly int MaxEntries;
 		RawInputHandler RawInputHandler;
+		readonly bool DoCoalesce;
 		public MainWindow() {
 			InitializeComponent();
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
@@ -35,6 +36,7 @@ namespace InputHistory {
 			MaxEntries = Properties.Settings.Default.MaxEntries;
 			Width = Properties.Settings.Default.Width;
 			Height = Properties.Settings.Default.Height;
+			DoCoalesce = Properties.Settings.Default.CoalesceMashing;
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
 			WidestCharWidth = glyphTypeface.CharacterToGlyphMap.Max(cg => glyphTypeface.AdvanceWidths[cg.Value]) * FontSize;
@@ -61,12 +63,12 @@ namespace InputHistory {
 		private void AddEvent(EventCode code) {
 			FinalizeEvent(Key.None);
 			if(!CurrentlyActiveCodes.Where(c => c == code).Any()) {
-				if(FinalizedEvents.Last().Code == code) {
+				if(DoCoalesce && FinalizedEvents.Last().Code == code) {
 					var toRestart = FinalizedEvents.Last();
 					toRestart.Restart();
 					LiveEvents.Add(toRestart);
 					FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
-				} else if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None && FinalizedEvents.TakeLast(2).First().Code == code) {
+				} else if(DoCoalesce && FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None && FinalizedEvents.TakeLast(2).First().Code == code) {
 					var toRestart = FinalizedEvents.TakeLast(2);
 					foreach(var r in toRestart) {
 						r.Restart();

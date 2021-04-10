@@ -106,5 +106,17 @@ namespace InputHistory.Properties {
                 this["Height"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CoalesceMashing {
+            get {
+                return ((bool)(this["CoalesceMashing"]));
+            }
+            set {
+                this["CoalesceMashing"] = value;
+            }
+        }
     }
 }
