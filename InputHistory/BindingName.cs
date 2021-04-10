@@ -1,24 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
-using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace InputHistory {
-	class BindingName {
+	public class BindingName {
 		public class Override {
-			readonly public string Name;
-			readonly public IEnumerable<EventCode> Codes;
+			[JsonInclude]
+			public readonly string Name;
+			[JsonInclude]
+			public readonly EventCode[] Codes;
 
-			public Override(string name, IEnumerable<EventCode> codes) {
+			public Override(string name, EventCode[] codes) {
 				Name = name;
 				Codes = codes;
 			}
 		}
-		private readonly string Name;
-		private readonly Override[] Overrides;
-
+		[JsonInclude]
+		public readonly string Name;
+		[JsonInclude]
+		public readonly Override[] Overrides;
+		[JsonConstructor]
 		public BindingName(string name, Override[] overrides) {//Overrides with lower indices take precedence over higher-indexed Overrides
 			Name = name;
 			Overrides = overrides;

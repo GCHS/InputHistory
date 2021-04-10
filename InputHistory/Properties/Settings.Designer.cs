@@ -118,5 +118,17 @@ namespace InputHistory.Properties {
                 this["CoalesceMashing"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BindingNames {
+            get {
+                return ((string)(this["BindingNames"]));
+            }
+            set {
+                this["BindingNames"] = value;
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing.Text;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,14 +30,22 @@ namespace InputHistory {
 		public MainWindow() {
 			InitializeComponent();
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
-			//FontFamily = new FontFamily((string)Properties.Settings.Default.Properties["FontName"].DefaultValue);
-			//FontSize = double.Parse((string)Properties.Settings.Default.Properties["FontSize"].DefaultValue);
+
+			var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingNames, HistoryEntry.Names.GetType()) as Dictionary<EventCode, BindingName>;
+			if(bindNames is not null) {
+				HistoryEntry.Names = bindNames;
+			}
+
 			Background = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.BgColor.R, Properties.Settings.Default.BgColor.G, Properties.Settings.Default.BgColor.B));
 			Foreground = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.FontColor.R, Properties.Settings.Default.FontColor.G, Properties.Settings.Default.FontColor.B));
+
 			MaxEntries = Properties.Settings.Default.MaxEntries;
+			
 			Width = Properties.Settings.Default.Width;
 			Height = Properties.Settings.Default.Height;
+			
 			DoCoalesce = Properties.Settings.Default.CoalesceMashing;
+			
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
 			WidestCharWidth = glyphTypeface.CharacterToGlyphMap.Max(cg => glyphTypeface.AdvanceWidths[cg.Value]) * FontSize;
@@ -51,7 +60,7 @@ namespace InputHistory {
 
 		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
 			if(LiveEvents.Count == 0) {
-				LiveEvents.Add(new(Key.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharWidth));
+				LiveEvents.Add(new(EventCode.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharWidth));
 			}
 			foreach(var ev in LiveEvents) ev.Update();
 			if(HistoryContainer.Children.Count > MaxEntries) {
@@ -66,7 +75,7 @@ namespace InputHistory {
 		private IEnumerable<EventCode> CurrentlyActiveCodes => LiveEvents.Select(e => e.Code);
 
 		private void AddEvent(EventCode code) {
-			FinalizeEvent(Key.None);
+			FinalizeEvent(EventCode.None);
 			var over = HistoryEntry.GetOverride(code, CurrentlyActiveCodes);
 			if(!LiveEvents.Where(e => e.Code == code && e.Override == over).Any()) {
 				if(DoCoalesce) {
@@ -77,7 +86,7 @@ namespace InputHistory {
 						FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
 						return;
 					} 
-					if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None) { 
+					if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == EventCode.None) { 
 						var toRestart = FinalizedEvents.TakeLast(2).First();
 						if(toRestart.Code == code && toRestart.Override == over) {
 							if(HistoryContainer.Children[^1] == FinalizedEvents.Last().Entry) {
@@ -104,10 +113,10 @@ namespace InputHistory {
 			LiveEvents.RemoveAll(e => e.Code == code);
 		}
 
-		public void KListenerKeyDown(object sender, RawKeyEventArgs args) => AddEvent(args.Key);
-		public void KListenerKeyUp(object sender, RawKeyEventArgs args) => FinalizeEvent(args.Key);
-		private void RawInputHandler_MouseUp(MouseButton released) => FinalizeEvent(released);
-		private void RawInputHandler_MouseDown(MouseButton pressed) => AddEvent(pressed);
+		public void KListenerKeyDown(object sender, RawKeyEventArgs args) => AddEvent(EventEncoder.Encode(args.Key));
+		public void KListenerKeyUp(object sender, RawKeyEventArgs args) => FinalizeEvent(EventEncoder.Encode(args.Key));
+		private void RawInputHandler_MouseUp(MouseButton released) => FinalizeEvent(EventEncoder.Encode(released));
+		private void RawInputHandler_MouseDown(MouseButton pressed) => AddEvent(EventEncoder.Encode(pressed));
 		private void RawInputHandler_MouseScrolled(short dx, short dy) {
 			if(dy < 0){AddEvent(EventCode.ScrollDown ); FinalizeEvent(EventCode.ScrollDown );}
 			if(dy > 0){AddEvent(EventCode.ScrollUp 	 ); FinalizeEvent(EventCode.ScrollUp   );}
@@ -118,6 +127,7 @@ namespace InputHistory {
 		private void Window_Closing(object sender, CancelEventArgs e) {
 			Properties.Settings.Default.Width = Width;
 			Properties.Settings.Default.Height = Height;
+			Properties.Settings.Default.BindingNames = JsonSerializer.Serialize(HistoryEntry.Names);
 			Properties.Settings.Default.Save();
 		}
 	}
