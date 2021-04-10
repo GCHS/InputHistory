@@ -69,24 +69,32 @@ namespace InputHistory {
 			FinalizeEvent(Key.None);
 			var over = HistoryEntry.GetOverride(code, CurrentlyActiveCodes);
 			if(!LiveEvents.Where(e => e.Code == code && e.Override == over).Any()) {
-				if(DoCoalesce && FinalizedEvents.Last().Code == code && FinalizedEvents.Last().Override == over) {
-					var toRestart = FinalizedEvents.Last();
-					toRestart.Restart();
-					LiveEvents.Add(toRestart);
-					FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
-				} else if(DoCoalesce && FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None
-					&& FinalizedEvents.TakeLast(2).First().Code == code && FinalizedEvents.TakeLast(2).First().Override == over) {
-					HistoryContainer.Children.Remove(FinalizedEvents.Last().Entry);
-					var toRestart = FinalizedEvents.TakeLast(2);
-					foreach(var r in toRestart) {
-						r.Restart();
-						r.Update();
+				if(DoCoalesce) {
+					if(FinalizedEvents.Last().Code == code && FinalizedEvents.Last().Override == over) {
+						var toRestart = FinalizedEvents.Last();
+						toRestart.Restart();
+						LiveEvents.Add(toRestart);
+						FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
+						return;
+					} 
+					if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None) { 
+						var toRestart = FinalizedEvents.TakeLast(2).First();
+						if(toRestart.Code == code && toRestart.Override == over) {
+							if(HistoryContainer.Children[^1] == FinalizedEvents.Last().Entry) {
+								HistoryContainer.Children.RemoveAt(HistoryContainer.Children.Count - 1);
+							}
+							
+							toRestart.Restart();
+							toRestart.Update();
+							
+							LiveEvents.Add(toRestart);
+							LiveEvents.Add(FinalizedEvents.Last());
+							FinalizedEvents.RemoveRange(FinalizedEvents.Count - 2, 2);
+							return;
+						}
 					}
-					LiveEvents.AddRange(toRestart);
-					FinalizedEvents.RemoveRange(FinalizedEvents.Count - 2, 2);
-				} else {
-					LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
-				}
+				} 
+				LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
 			}
 		}
 		private void FinalizeEvent(EventCode code) {
