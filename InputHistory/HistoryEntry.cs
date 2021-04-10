@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,11 +10,11 @@ using static InputHistory.BindingName;
 namespace InputHistory {
 	partial class HistoryEntry {
 		public readonly EventCode Code;
-		private readonly Label durationMillis;
-		public readonly Grid Entry;
+		public readonly Grid Entry = new() { Margin = new Thickness(0) };
 		private readonly List<(Stopwatch, long)> timersAndStarts = new();
-		private readonly List<Label> names = new();
-		private readonly List<Label> counts = new();
+		private readonly Label name = new();
+		private readonly Label count = new();
+		private readonly Label durationMillis = new();
 		private readonly double WidestCharWidth;
 		public double AverageDurationMillis { get; private set; }
 
@@ -50,12 +47,10 @@ namespace InputHistory {
 		
 		private HistoryEntry() {
 			timersAndStarts.Add((Stopwatch.StartNew(), Stopwatch.GetTimestamp()));
-			Entry = new() { Margin = new Thickness(0) };
 			Entry.RowDefinitions.Add(new());
 			Entry.RowDefinitions.Add(new());
 			Entry.ColumnDefinitions.Add(new());
 			Entry.ColumnDefinitions.Add(new());
-			durationMillis = new();
 		}
 
 		public HistoryEntry(in EventCode code, in IEnumerable<EventCode> liveEvents, Panel container, Control copySettingsFrom, double widestCharWidth) : this() {
@@ -67,21 +62,22 @@ namespace InputHistory {
 		}
 
 		private void ConfigureUI(string eventName, Panel container, Control copySettingsFrom) {
-			Label name = new() {
-				FontFamily = copySettingsFrom.FontFamily,
-				FontSize = copySettingsFrom.FontSize,
-				Foreground = copySettingsFrom.Foreground,
-				Content = eventName,
-				Padding = new Thickness(0),
-				Margin = new Thickness(8, 0, 0, 0),
-				ClipToBounds = false
-			};
+			#region configure name
+			name.FontFamily = copySettingsFrom.FontFamily;
+			name.FontSize = copySettingsFrom.FontSize;
+			name.Foreground = copySettingsFrom.Foreground;
+			name.Content = eventName;
+			name.Padding = new Thickness(0);
+			name.Margin = new Thickness(8, 0, 0, 0);
+			name.ClipToBounds = false;
+			
 			name.SetValue(Grid.RowProperty, 0);
 			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Right);
-			names.Add(name);
 			
 			Entry.Children.Add(name);
+			#endregion
 
+			#region configure durationMillis
 			durationMillis.FontFamily = copySettingsFrom.FontFamily;
 			durationMillis.FontSize   = copySettingsFrom.FontSize;
 			durationMillis.Foreground = copySettingsFrom.Foreground;
@@ -90,32 +86,29 @@ namespace InputHistory {
 			durationMillis.SetValue(Grid.RowProperty, 1);
 			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			durationMillis.ClipToBounds = false;
+
 			Entry.Children.Add(durationMillis);
+			#endregion
 
-
+			#region configure count
 			var superscript = new TransformGroup() { };
 			superscript.Children.Add(new ScaleTransform(0.75, 0.75));
-			//superscript.Children.Add(new TranslateTransform(0, -durationMillis.FontSize / 0.25));
 
-			
-
-			Label count = new() {
-				FontFamily = durationMillis.FontFamily,
-				FontSize = durationMillis.FontSize,
-				Foreground = durationMillis.Foreground,
-				Content = "",
-				Padding = new Thickness(0),
-				Margin = new Thickness(0, 0, 8, 0),
-				ClipToBounds = false,
-				RenderTransform = superscript
-			};
+			count.FontFamily = durationMillis.FontFamily;
+			count.FontSize = durationMillis.FontSize;
+			count.Foreground = durationMillis.Foreground;
+			count.Content = "";
+			count.Padding = new Thickness(0);
+			count.Margin = new Thickness(0, 0, 8, 0);
+			count.ClipToBounds = false;
+			count.RenderTransform = superscript;
 
 			count.SetValue(Grid.RowProperty, 0);
 			count.SetValue(Grid.ColumnProperty, 1);
 			count.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Left);
 
-			counts.Add(count);
 			Entry.Children.Add(count);
+			#endregion
 
 			container.Children.Add(Entry);
 		}
@@ -138,7 +131,7 @@ namespace InputHistory {
 		}
 		public void Restart() {
 			timersAndStarts.Add((Stopwatch.StartNew(), Stopwatch.GetTimestamp()));
-			counts[0].Content = timersAndStarts.Count;
+			count.Content = timersAndStarts.Count;
 		}
 	}
 }
