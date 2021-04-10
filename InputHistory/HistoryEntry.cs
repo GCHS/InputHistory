@@ -14,8 +14,12 @@ namespace InputHistory {
 	partial class HistoryEntry {
 		public readonly EventCode Code;
 		private readonly Label durationMillis;
-		private readonly Stopwatch timer;
+		public readonly Grid Entry;
+		private readonly List<(Stopwatch, long)> timersAndStarts = new();
+		private readonly List<Label> names = new();
+		private readonly List<Label> counts = new();
 		private readonly double WidestCharWidth;
+		public double AverageDurationMillis { get; private set; }
 
 		private static readonly Dictionary<EventCode, BindingName> Names = new() {
 			{Key.None, new("")},
@@ -45,7 +49,12 @@ namespace InputHistory {
 		};
 		
 		private HistoryEntry() {
-			timer = Stopwatch.StartNew();
+			timersAndStarts.Add((Stopwatch.StartNew(), Stopwatch.GetTimestamp()));
+			Entry = new() { Margin = new Thickness(0) };
+			Entry.RowDefinitions.Add(new());
+			Entry.RowDefinitions.Add(new());
+			Entry.ColumnDefinitions.Add(new());
+			Entry.ColumnDefinitions.Add(new());
 			durationMillis = new();
 		}
 
@@ -58,23 +67,20 @@ namespace InputHistory {
 		}
 
 		private void ConfigureUI(string eventName, Panel container, Control copySettingsFrom) {
-			Grid entryContainer = new() { Margin = new Thickness(0) };
-			entryContainer.RowDefinitions.Add(new());
-			entryContainer.RowDefinitions.Add(new());
-
 			Label name = new() {
 				FontFamily = copySettingsFrom.FontFamily,
 				FontSize = copySettingsFrom.FontSize,
 				Foreground = copySettingsFrom.Foreground,
 				Content = eventName,
 				Padding = new Thickness(0),
-				Margin = new Thickness(8, 0, 8, 0),
+				Margin = new Thickness(8, 0, 0, 0),
 				ClipToBounds = false
 			};
 			name.SetValue(Grid.RowProperty, 0);
-			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
+			name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Right);
+			names.Add(name);
 			
-			entryContainer.Children.Add(name);
+			Entry.Children.Add(name);
 
 			durationMillis.FontFamily = copySettingsFrom.FontFamily;
 			durationMillis.FontSize   = copySettingsFrom.FontSize;
@@ -84,15 +90,55 @@ namespace InputHistory {
 			durationMillis.SetValue(Grid.RowProperty, 1);
 			durationMillis.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			durationMillis.ClipToBounds = false;
-			entryContainer.Children.Add(durationMillis);
+			Entry.Children.Add(durationMillis);
 
-			container.Children.Add(entryContainer);
+
+			var superscript = new TransformGroup() { };
+			superscript.Children.Add(new ScaleTransform(0.75, 0.75));
+			//superscript.Children.Add(new TranslateTransform(0, -durationMillis.FontSize / 0.25));
+
+			
+
+			Label count = new() {
+				FontFamily = durationMillis.FontFamily,
+				FontSize = durationMillis.FontSize,
+				Foreground = durationMillis.Foreground,
+				Content = "",
+				Padding = new Thickness(0),
+				Margin = new Thickness(0, 0, 8, 0),
+				ClipToBounds = false,
+				RenderTransform = superscript
+			};
+
+			count.SetValue(Grid.RowProperty, 0);
+			count.SetValue(Grid.ColumnProperty, 1);
+			count.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Left);
+
+			counts.Add(count);
+			Entry.Children.Add(count);
+
+			container.Children.Add(Entry);
 		}
 		public void Update() {
-			var ms = timer.ElapsedMilliseconds;
-			var duration = $"{ms}ms";
-			durationMillis.Content = duration;
-			durationMillis.Width = WidestCharWidth * duration.Length;//make the label wide enough to accomommodate every char within being max width to keep the label from bouncing around in size as it counts up
+			string? message;
+			if(timersAndStarts.Count == 1) { //duration mode
+				message = $"{timersAndStarts.Last().Item1.ElapsedMilliseconds}ms";
+			} else { //frequency mode
+				var risingEdgeFreq = Stopwatch.Frequency / timersAndStarts.SkipLast(1).Zip(timersAndStarts.Skip(1)).Select(ts => ts.Second.Item2 - ts.First.Item2).Average();
+				var fallingEdgeFreq = Stopwatch.Frequency / timersAndStarts.SkipLast(1).Zip(timersAndStarts.Skip(1)).Select(ts => ts.Second.Item2 + ts.Second.Item1.ElapsedTicks - ts.First.Item2 - ts.First.Item1.ElapsedTicks).Average();
+				message = $"{(risingEdgeFreq + fallingEdgeFreq) / 2:F3}Hz";
+			}
+			durationMillis.Content = message;
+			durationMillis.Width = WidestCharWidth * message.Length;//make the label wide enough to accomommodate every char within being max width to keep the label from bouncing around in size as it counts up
+		}
+		public void Stop() {
+			foreach(var t in timersAndStarts) {
+				t.Item1.Stop();
+			}
+		}
+		public void Restart() {
+			timersAndStarts.Add((Stopwatch.StartNew(), Stopwatch.GetTimestamp()));
+			counts[0].Content = timersAndStarts.Count;
 		}
 	}
 }

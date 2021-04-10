@@ -21,6 +21,7 @@ namespace InputHistory {
 	/// </summary>
 	public partial class MainWindow : Window {
 		readonly List<HistoryEntry> LiveEvents = new();
+		readonly List<HistoryEntry> FinalizedEvents = new();
 		readonly double WidestCharWidth;
 		readonly int MaxEntries;
 		RawInputHandler RawInputHandler;
@@ -50,7 +51,7 @@ namespace InputHistory {
 			if(LiveEvents.Count == 0) {
 				LiveEvents.Add(new(Key.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharWidth));
 			}
-			foreach(var ev in LiveEvents)	ev.Update();
+			foreach(var ev in LiveEvents) ev.Update();
 			if(HistoryContainer.Children.Count > MaxEntries) {
 				HistoryContainer.Children.RemoveRange(0, HistoryContainer.Children.Count - MaxEntries);
 			}
@@ -59,21 +60,41 @@ namespace InputHistory {
 
 		private void AddEvent(EventCode code) {
 			FinalizeEvent(Key.None);
-			if(!CurrentlyActiveCodes.Where(c => c == code).Any())
-				LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
+			if(!CurrentlyActiveCodes.Where(c => c == code).Any()) {
+				if(FinalizedEvents.Last().Code == code) {
+					var toRestart = FinalizedEvents.Last();
+					toRestart.Restart();
+					LiveEvents.Add(toRestart);
+					FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
+				} else if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None && FinalizedEvents.TakeLast(2).First().Code == code) {
+					var toRestart = FinalizedEvents.TakeLast(2);
+					foreach(var r in toRestart) {
+						r.Restart();
+						r.Update();
+					}
+					LiveEvents.AddRange(toRestart);
+					FinalizedEvents.RemoveRange(FinalizedEvents.Count - 2, 2);
+				} else {
+					LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
+				}
+			}
 		}
-		private void FinalizeEvent(EventCode code) => LiveEvents.RemoveAll(e => e.Code == code);
+		private void FinalizeEvent(EventCode code) {
+			var toFinalize = LiveEvents.Where(e => e.Code == code);
+			foreach(var f in toFinalize) f.Stop();
+			FinalizedEvents.AddRange(toFinalize);
+			LiveEvents.RemoveAll(e => e.Code == code);
+		}
 
 		public void KListenerKeyDown(object sender, RawKeyEventArgs args) => AddEvent(args.Key);
 		public void KListenerKeyUp(object sender, RawKeyEventArgs args) => FinalizeEvent(args.Key);
 		private void RawInputHandler_MouseUp(MouseButton released) => FinalizeEvent(released);
 		private void RawInputHandler_MouseDown(MouseButton pressed) => AddEvent(pressed);
 		private void RawInputHandler_MouseScrolled(short dx, short dy) {
-			FinalizeEvent(Key.None);
-			if(dy < 0) _ = new HistoryEntry(EventCode.ScrollDown,  CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
-			if(dy > 0) _ = new HistoryEntry(EventCode.ScrollUp,    CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
-			if(dx < 0) _ = new HistoryEntry(EventCode.ScrollLeft,  CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
-			if(dx > 0) _ = new HistoryEntry(EventCode.ScrollRight, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth);
+			if(dy < 0){AddEvent(EventCode.ScrollDown ); FinalizeEvent(EventCode.ScrollDown );}
+			if(dy > 0){AddEvent(EventCode.ScrollUp 	 ); FinalizeEvent(EventCode.ScrollUp   );}
+			if(dx < 0){AddEvent(EventCode.ScrollLeft ); FinalizeEvent(EventCode.ScrollLeft );}
+			if(dx > 0){AddEvent(EventCode.ScrollRight); FinalizeEvent(EventCode.ScrollRight);}
 		}
 
 		private void Window_Closing(object sender, CancelEventArgs e) {
