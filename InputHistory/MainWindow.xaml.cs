@@ -5,6 +5,7 @@ using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -127,7 +128,9 @@ namespace InputHistory {
 		private void Window_Closing(object sender, CancelEventArgs e) {
 			Properties.Settings.Default.Width = Width;
 			Properties.Settings.Default.Height = Height;
-			Properties.Settings.Default.BindingNames = JsonSerializer.Serialize(HistoryEntry.Names);
+			JsonSerializerOptions options = new() { WriteIndented = true };
+			options.Converters.Add(new JsonStringEnumConverter());
+			Properties.Settings.Default.BindingNames = JsonSerializer.Serialize(HistoryEntry.Names, options);
 			Properties.Settings.Default.Save();
 		}
 	}
