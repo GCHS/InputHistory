@@ -32,10 +32,12 @@ namespace InputHistory {
 			InitializeComponent();
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 
-			var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingNames, HistoryEntry.Names.GetType()) as Dictionary<EventCode, BindingName>;
-			if(bindNames is not null) {
-				HistoryEntry.Names = bindNames;
-			}
+			try {
+				var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingNames, HistoryEntry.Bindings.GetType()) as Dictionary<EventCode, Binding>;
+				if(bindNames is not null) {
+					HistoryEntry.Bindings = bindNames;
+				}
+			} catch(Exception) {}
 
 			Background = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.BgColor.R, Properties.Settings.Default.BgColor.G, Properties.Settings.Default.BgColor.B));
 			Foreground = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.FontColor.R, Properties.Settings.Default.FontColor.G, Properties.Settings.Default.FontColor.B));
@@ -130,7 +132,7 @@ namespace InputHistory {
 			Properties.Settings.Default.Height = Height;
 			JsonSerializerOptions options = new() { WriteIndented = true };
 			options.Converters.Add(new JsonStringEnumConverter());
-			Properties.Settings.Default.BindingNames = JsonSerializer.Serialize(HistoryEntry.Names, options);
+			Properties.Settings.Default.BindingNames = JsonSerializer.Serialize(HistoryEntry.Bindings, options);
 			Properties.Settings.Default.Save();
 		}
 	}

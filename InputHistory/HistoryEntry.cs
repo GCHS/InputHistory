@@ -1,25 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
-using static InputHistory.BindingName;
+using System.Windows.Media.Imaging;
+using static InputHistory.Binding;
 
 namespace InputHistory {
 	partial class HistoryEntry {
 		public readonly EventCode Code;
 		public readonly Grid Entry = new() { Margin = new Thickness(0) };
 		private readonly List<(Stopwatch, long)> timersAndStarts = new();
-		private readonly Label Name = new();
+		private readonly Label Representation = new();
 		public readonly Override? Override = null;
 		private readonly Label Count = new();
 		private readonly Label DurationMillis = new();
 		private readonly double WidestCharWidth;
 		public double AverageDurationMillis { get; private set; }
 
-		public static Dictionary<EventCode, BindingName> Names = new() {
+		public static Dictionary<EventCode, Binding> Bindings = new() {
 			{EventCode.None, new("")},
 			{EventCode.W, new("Forward")},
 			{EventCode.A, new("Leftward")},
@@ -55,34 +56,37 @@ namespace InputHistory {
 		}
 
 		public static Override? GetOverride(EventCode code, IEnumerable<EventCode> liveEvents) =>
-			(Names.TryGetValue(code, out var binding) ? binding.GetNameAndOverride(liveEvents) : (null, null)).Item2;
+			(Bindings.TryGetValue(code, out var binding) ? binding.GetRepresentationAndOverride(liveEvents) : (null, null)).Item2;
 
 		public HistoryEntry(in EventCode code, in IEnumerable<EventCode> liveEvents, Panel container, Control copySettingsFrom, double widestCharWidth) : this() {
 			Code = code;
-			var (name, whichOverride) = Names.TryGetValue(Code, out var bindingName) ? bindingName.GetNameAndOverride(liveEvents) : ("Fatfinger", null);
+			var (representation, whichOverride) = Bindings.TryGetValue(Code, out var bindingName) ? bindingName.GetRepresentationAndOverride(liveEvents) : ("Fatfinger", null);
 			Override = whichOverride;
-			ConfigureUI(name, container, copySettingsFrom);
+			ConfigureUI(representation, container, copySettingsFrom);
 			WidestCharWidth = widestCharWidth;
 			Update();
 		}
 
-		private void ConfigureUI(string eventName, Panel container, Control copySettingsFrom) {
-			#region configure name
-			Name.FontFamily = copySettingsFrom.FontFamily;
-			Name.FontSize = copySettingsFrom.FontSize;
-			Name.Foreground = copySettingsFrom.Foreground;
-			Name.Content = eventName;
-			Name.Padding = new Thickness(0);
-			Name.Margin = new Thickness(8, 0, 0, 0);
-			Name.ClipToBounds = false;
+		private void ConfigureUI(object representation, Panel container, Control copySettingsFrom) {
+			#region configure Representation
+			Representation.FontFamily = copySettingsFrom.FontFamily;
+			Representation.FontSize = copySettingsFrom.FontSize;
+			Representation.Foreground = copySettingsFrom.Foreground;
+			Representation.Content = representation switch {
+				Uri u => new Image() { Source = new BitmapImage(u) },
+				_ => representation,
+			};
+			Representation.Padding = new Thickness(0);
+			Representation.Margin = new Thickness(8, 0, 0, 0);
+			Representation.ClipToBounds = false;
 			
-			Name.SetValue(Grid.RowProperty, 0);
-			Name.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Right);
+			Representation.SetValue(Grid.RowProperty, 0);
+			Representation.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Right);
 			
-			Entry.Children.Add(Name);
+			Entry.Children.Add(Representation);
 			#endregion
 
-			#region configure durationMillis
+			#region configure DurationMillis
 			DurationMillis.FontFamily = copySettingsFrom.FontFamily;
 			DurationMillis.FontSize   = copySettingsFrom.FontSize;
 			DurationMillis.Foreground = copySettingsFrom.Foreground;
@@ -95,7 +99,7 @@ namespace InputHistory {
 			Entry.Children.Add(DurationMillis);
 			#endregion
 
-			#region configure count
+			#region configure Count
 			var superscript = new TransformGroup() { };
 			superscript.Children.Add(new ScaleTransform(0.75, 0.75));
 
