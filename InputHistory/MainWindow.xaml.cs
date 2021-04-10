@@ -74,6 +74,7 @@ namespace InputHistory {
 					LiveEvents.Add(toRestart);
 					FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
 				} else if(DoCoalesce && FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == Key.None && FinalizedEvents.TakeLast(2).First().Code == code) {
+					HistoryContainer.Children.Remove(FinalizedEvents.Last().Entry);
 					var toRestart = FinalizedEvents.TakeLast(2);
 					foreach(var r in toRestart) {
 						r.Restart();
