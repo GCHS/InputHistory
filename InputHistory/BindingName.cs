@@ -30,5 +30,9 @@ namespace InputHistory {
 
 		public string GetName(IEnumerable<EventCode> pressed) =>
 			Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault()?.Name ?? Name;
+		public (string, Override?) GetNameAndOverride(IEnumerable<EventCode> pressed) {
+			var o = Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault();
+			return (o?.Name ?? Name, o);
+		}
 	}
 }
