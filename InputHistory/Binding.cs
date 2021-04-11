@@ -41,14 +41,11 @@ namespace InputHistory {
 		public Binding(string defaultRepresentation, Override[] overrides) {//Overrides with lower indices take precedence over higher-indexed Overrides
 			DefaultRepresentation = defaultRepresentation;
 			Overrides = overrides;
-		}
-		public Binding(string defaultRepresentation) {
-			DefaultRepresentation = defaultRepresentation;
-			Overrides = Array.Empty<Override>();
 			if(DefaultRepresentation.Contains('.')) {
 				uri = new Uri(Path.GetFullPath(DefaultRepresentation));
 			}
 		}
+		public Binding(string defaultRepresentation) : this(defaultRepresentation, Array.Empty<Override>()){}
 
 		public object GetRepresentation(IEnumerable<EventCode> pressed) =>
 			Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault()?.PreferredRepresentation ?? DefaultRepresentation;
