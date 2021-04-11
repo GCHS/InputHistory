@@ -21,31 +21,6 @@ namespace InputHistory {
 		public double AverageDurationMillis { get; private set; }
 
 		public static Dictionary<EventCode, Binding> Bindings = new() {
-			{EventCode.None, new("")},
-			{EventCode.W, new("Forward")},
-			{EventCode.A, new("Leftward")},
-			{EventCode.S, new("Backward")},
-			{EventCode.D, new("Rightward")},
-			{EventCode.R, new("Lock On")},
-			{EventCode.E, new("Change Target")},
-			{EventCode.Q, new("Change Situation Command")},
-			{EventCode.LeftCtrl,  new("Change Target")},
-			{EventCode.LeftShift, new("Open Shortcut Menu")},
-			{EventCode.M,  new("Pause")},
-			{EventCode.D4, new("Pause")},
-			{EventCode.N,  new("Open Camera")},
-			{EventCode.D3, new("Open Camera")},
-			{EventCode.Escape,  new("Open PC Menu")},
-			{EventCode.Space,   new("Jump", new Override[] {new("Shortcut 4", new EventCode[]{EventCode.LeftShift})})},
-			{EventCode.LeftAlt, new("Situation Command", new Override[] {new("Shortcut 2", new EventCode[]{EventCode.LeftShift})})},
-			{EventCode.LeftMouseButton,   new("Attack", new Override[] {new("Shortcut 1", new EventCode[]{EventCode.LeftShift})})},
-			{EventCode.RightMouseButton,  new("Block",  new Override[] {new("Shortcut 3", new EventCode[]{EventCode.LeftShift}), new("Dodge", new EventCode[]{EventCode.W, EventCode.A, EventCode.S, EventCode.D})})},
-			{EventCode.MiddleMouseButton, new("Lock On")},
-			{EventCode.XButton1, new("Equip Right Keyblade")},
-			{EventCode.XButton2, new("Equip Left Keyblade")},
-			{EventCode.ScrollDown, new("Menu Down")},
-			{EventCode.ScrollUp,   new("Menu Up")},
-
 			{EventCode.XInputDPadUp,    new("up.png")},
 			{EventCode.XInputDPadDown,  new("down.png")},
 			{EventCode.XInputDPadLeft,  new("left.png")},
@@ -103,6 +78,8 @@ namespace InputHistory {
 			WidestCharWidth = widestCharWidth;
 			Update();
 		}
+
+		public static bool IsNamed(EventCode code) => Bindings.ContainsKey(code);
 
 		private void ConfigureUI(object representation, Panel container, Control copySettingsFrom) {
 			#region configure Representation
