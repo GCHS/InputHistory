@@ -26,7 +26,7 @@
     <Setting Name="CoalesceMashing" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="BindingNames" Type="System.String" Scope="User">
+    <Setting Name="BindingRepresentations" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ShowFatfingers" Type="System.Boolean" Scope="User">

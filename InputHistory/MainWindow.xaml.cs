@@ -34,7 +34,7 @@ namespace InputHistory {
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 
 			try {
-				var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingNames, HistoryEntry.Bindings.GetType()) as Dictionary<EventCode, Binding>;
+				var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingRepresentations, HistoryEntry.Bindings.GetType()) as Dictionary<EventCode, Binding>;
 				if(bindNames is not null) {
 					HistoryEntry.Bindings = bindNames;
 				}
@@ -145,7 +145,7 @@ namespace InputHistory {
 			Properties.Settings.Default.Height = Height;
 			JsonSerializerOptions options = new() { WriteIndented = true };
 			options.Converters.Add(new JsonStringEnumConverter());
-			Properties.Settings.Default.BindingNames = JsonSerializer.Serialize(HistoryEntry.Bindings, options);
+			Properties.Settings.Default.BindingRepresentations = JsonSerializer.Serialize(HistoryEntry.Bindings, options);
 			Properties.Settings.Default.Save();
 		}
 	}

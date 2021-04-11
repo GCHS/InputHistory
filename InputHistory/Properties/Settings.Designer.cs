@@ -122,12 +122,12 @@ namespace InputHistory.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string BindingNames {
+        public string BindingRepresentations {
             get {
-                return ((string)(this["BindingNames"]));
+                return ((string)(this["BindingRepresentations"]));
             }
             set {
-                this["BindingNames"] = value;
+                this["BindingRepresentations"] = value;
             }
         }
         
