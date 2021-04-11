@@ -28,7 +28,7 @@ namespace InputHistory {
 		readonly int MaxEntries;
 		RawInputHandler RawInputHandler;
 		ControllerListener ControllerListener;
-		readonly bool DoCoalesce;
+		readonly bool DoCoalesce, ShowFatfingers;
 		public MainWindow() {
 			InitializeComponent();
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
@@ -49,6 +49,7 @@ namespace InputHistory {
 			Height = Properties.Settings.Default.Height;
 			
 			DoCoalesce = Properties.Settings.Default.CoalesceMashing;
+			ShowFatfingers = Properties.Settings.Default.ShowFatfingers;
 			
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
@@ -87,35 +88,37 @@ namespace InputHistory {
 		private IEnumerable<EventCode> CurrentlyActiveCodes => LiveEvents.Select(e => e.Code);
 
 		private void AddEvent(EventCode code) {
-			FinalizeEvent(EventCode.None);
-			var over = HistoryEntry.GetOverride(code, CurrentlyActiveCodes);
-			if(!LiveEvents.Where(e => e.Code == code && e.Override == over).Any()) {
-				if(DoCoalesce) {
-					if(FinalizedEvents.Last().Code == code && FinalizedEvents.Last().Override == over) {
-						var toRestart = FinalizedEvents.Last();
-						toRestart.Restart();
-						LiveEvents.Add(toRestart);
-						FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
-						return;
-					} 
-					if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == EventCode.None) { 
-						var toRestart = FinalizedEvents.TakeLast(2).First();
-						if(toRestart.Code == code && toRestart.Override == over) {
-							if(HistoryContainer.Children[^1] == FinalizedEvents.Last().Entry) {
-								HistoryContainer.Children.RemoveAt(HistoryContainer.Children.Count - 1);
-							}
-							
+			if(ShowFatfingers || HistoryEntry.IsNamed(code)) {
+				FinalizeEvent(EventCode.None);
+				var over = HistoryEntry.GetOverride(code, CurrentlyActiveCodes);
+				if(!LiveEvents.Where(e => e.Code == code && e.Override == over).Any()) {
+					if(DoCoalesce) {
+						if(FinalizedEvents.Last().Code == code && FinalizedEvents.Last().Override == over) {
+							var toRestart = FinalizedEvents.Last();
 							toRestart.Restart();
-							toRestart.Update();
-							
 							LiveEvents.Add(toRestart);
-							LiveEvents.Add(FinalizedEvents.Last());
-							FinalizedEvents.RemoveRange(FinalizedEvents.Count - 2, 2);
+							FinalizedEvents.RemoveAt(FinalizedEvents.Count - 1);
 							return;
 						}
+						if(FinalizedEvents.Count >= 2 && FinalizedEvents.Last().Code == EventCode.None) {
+							var toRestart = FinalizedEvents.TakeLast(2).First();
+							if(toRestart.Code == code && toRestart.Override == over) {
+								if(HistoryContainer.Children[^1] == FinalizedEvents.Last().Entry) {
+									HistoryContainer.Children.RemoveAt(HistoryContainer.Children.Count - 1);
+								}
+
+								toRestart.Restart();
+								toRestart.Update();
+
+								LiveEvents.Add(toRestart);
+								LiveEvents.Add(FinalizedEvents.Last());
+								FinalizedEvents.RemoveRange(FinalizedEvents.Count - 2, 2);
+								return;
+							}
+						}
 					}
-				} 
-				LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
+					LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
+				}
 			}
 		}
 		private void FinalizeEvent(EventCode code) {

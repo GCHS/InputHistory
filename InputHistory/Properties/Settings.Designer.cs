@@ -109,7 +109,7 @@ namespace InputHistory.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool CoalesceMashing {
             get {
                 return ((bool)(this["CoalesceMashing"]));
@@ -128,6 +128,18 @@ namespace InputHistory.Properties {
             }
             set {
                 this["BindingNames"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowFatfingers {
+            get {
+                return ((bool)(this["ShowFatfingers"]));
+            }
+            set {
+                this["ShowFatfingers"] = value;
             }
         }
     }
