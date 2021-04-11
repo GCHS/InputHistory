@@ -37,7 +37,7 @@ namespace InputHistory.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("KH2 ALL MENU")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Segoe UI")]
         public string FontName {
             get {
                 return ((string)(this["FontName"]));
