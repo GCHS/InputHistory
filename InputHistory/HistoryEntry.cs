@@ -21,6 +21,7 @@ namespace InputHistory {
 		public double AverageDurationMillis { get; private set; }
 
 		public static Dictionary<EventCode, Binding> Bindings = new() {
+			{EventCode.None, new("")},
 			{EventCode.XInputDPadUp,    new("up.png")},
 			{EventCode.XInputDPadDown,  new("down.png")},
 			{EventCode.XInputDPadLeft,  new("left.png")},
@@ -95,7 +96,8 @@ namespace InputHistory {
 			Representation.ClipToBounds = false;
 			
 			Representation.SetValue(Grid.RowProperty, 0);
-			Representation.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Right);
+			Representation.SetValue(Grid.ColumnProperty, 0);
+			Representation.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Center);
 			
 			Entry.Children.Add(Representation);
 			#endregion
@@ -153,6 +155,7 @@ namespace InputHistory {
 			}
 		}
 		public void Restart() {
+			Representation.SetValue(Label.HorizontalContentAlignmentProperty, HorizontalAlignment.Right);
 			timersAndStarts.Add((Stopwatch.StartNew(), Stopwatch.GetTimestamp()));
 			Count.Content = timersAndStarts.Count;
 		}
