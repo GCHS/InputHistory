@@ -827,18 +827,18 @@ namespace InputHistory {
 		}
 
 		private readonly RAWINPUTDEVICE[] DevicesToRegisterFor = new RAWINPUTDEVICE[] {
-					new(){
-						usUsagePage = (ushort) UsagePage.GENERIC,
-						usUsage = (ushort)UsageID.GENERIC_KEYBOARD,
-					},
+					//new(){
+					//	usUsagePage = (ushort) UsagePage.GENERIC,
+					//	usUsage = (ushort)UsageID.GENERIC_KEYBOARD,
+					//},
 					new(){
 						usUsagePage = (ushort) UsagePage.GENERIC,
 						usUsage = (ushort)UsageID.GENERIC_MOUSE,
 					},
-					new() {
-						usUsagePage = (ushort)UsagePage.GENERIC,
-						usUsage = (ushort)UsageID.GENERIC_GAMEPAD,
-					},
+					//new() {
+					//	usUsagePage = (ushort)UsagePage.GENERIC,
+					//	usUsage = (ushort)UsageID.GENERIC_GAMEPAD,
+					//},
 				};
 
 		private readonly (MouseEventFlags, MouseButton, Direction)[] FlagToButton = new (MouseEventFlags, MouseButton, Direction)[] {

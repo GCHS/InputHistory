@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using SharpDX.XInput;
+using System.Windows.Input;
 
 namespace InputHistory {
 	enum ScrollDirection {
@@ -210,22 +211,61 @@ namespace InputHistory {
 		DeadCharProcessed = 172,
 		#endregion
 		#region MouseButtons
-		LeftMouseButton = 1 << 16,
-		MiddleMouseButton = 2 << 16,
-		RightMouseButton = 3 << 16,
-		XButton1 = 4 << 16,
-		XButton2 = 5 << 16,
+		LeftMouseButton = 1 << 8,
+		MiddleMouseButton = 2 << 8,
+		RightMouseButton = 3 << 8,
+		XButton1 = 4 << 8,
+		XButton2 = 5 << 8,
 		#endregion
 		#region ScrollDirection
-		ScrollUp = ScrollDirection.Up << 24,
-		ScrollRight = ScrollDirection.Right << 24,
-		ScrollDown = ScrollDirection.Down << 24,
-		ScrollLeft = ScrollDirection.Left << 24,
+		ScrollUp    = ScrollDirection.Up    << 12,
+		ScrollRight = ScrollDirection.Right << 12,
+		ScrollDown  = ScrollDirection.Down  << 12,
+		ScrollLeft  = ScrollDirection.Left  << 12,
+		#endregion
+		#region XInputButtonFlags
+		XInputDPadUp        = 0x0001 << 16,
+		XInputDPadDown      = 0x0002 << 16,
+		XInputDPadLeft      = 0x0004 << 16,
+		XInputDPadRight     = 0x0008 << 16,
+		XInputStart         = 0x0010 << 16,
+		XInputBack          = 0x0020 << 16,
+		XInputLeftThumb     = 0x0040 << 16,
+		XInputRightThumb    = 0x0080 << 16,
+		XInputLeftShoulder  = 0x0100 << 16,
+		XInputRightShoulder = 0x0200 << 16,
+		XInputA             = 0x1000 << 16,
+		XInputB             = 0x2000 << 16,
+		XInputX             = 0x4000 << 16,
+		XInputY             = 0x8000 << 16,
+		XInputLStickUp        = 180,
+		XInputLStickUpRight		= 181,
+		XInputLStickRight			= 182,
+		XInputLStickDownRight	= 183,
+		XInputLStickDown			= 184,
+		XInputLStickDownLeft	= 185,
+		XInputLStickLeft			= 186,
+		XInputLStickUpLeft		= 187,
+		XInputRStickUp				= 188,
+		XInputRStickUpRight		= 189,
+		XInputRStickRight			= 190,
+		XInputRStickDownRight	= 191,
+		XInputRStickDown			= 192,
+		XInputRStickDownLeft	= 193,
+		XInputRStickLeft			= 194,
+		XInputRStickUpLeft		= 195,
+		XInputRT							= 196,
+		XInputLT							= 197,
+		XInputDPadUpLeft			= 198,
+		XInputDPadUpRight			= 199,
+		XInputDPadDownLeft		= 200,
+		XInputDPadDownRight   = 201,
 		#endregion
 	}
 	static class EventEncoder {
 		public static EventCode Encode(Key k) => (EventCode)k;
-		public static EventCode Encode(MouseButton m) => (EventCode)((uint)(m + 1) << 16 );//add one to m because it indexes the left mouse button to 0 and 0 is taken by Key.None
-		public static EventCode Encode(ScrollDirection d) => (EventCode)((uint)d << 24);
+		public static EventCode Encode(MouseButton m) => (EventCode)((uint)(m + 1) << 8 );//add one to m because it indexes the left mouse button to 0 and 0 is taken by Key.None
+		public static EventCode Encode(ScrollDirection d) => (EventCode)((uint)d << 12);
+		public static EventCode Encode(GamepadButtonFlags f) => (EventCode)((uint)f << 16);
 	}
 }

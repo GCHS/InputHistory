@@ -27,6 +27,7 @@ namespace InputHistory {
 		readonly double WidestCharWidth;
 		readonly int MaxEntries;
 		RawInputHandler RawInputHandler;
+		ControllerListener ControllerListener;
 		readonly bool DoCoalesce;
 		public MainWindow() {
 			InitializeComponent();
@@ -52,6 +53,8 @@ namespace InputHistory {
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
 			WidestCharWidth = glyphTypeface.CharacterToGlyphMap.Max(cg => glyphTypeface.AdvanceWidths[cg.Value]) * FontSize;
+
+			ControllerListener = new();
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e) {
@@ -59,7 +62,13 @@ namespace InputHistory {
 			RawInputHandler.MouseDown += RawInputHandler_MouseDown;
 			RawInputHandler.MouseUp += RawInputHandler_MouseUp;
 			RawInputHandler.MouseScrolled += RawInputHandler_MouseScrolled;
+
+			ControllerListener.InputPress += ControllerListener_InputPress;
+			ControllerListener.InputRelease += ControllerListener_InputRelease;
 		}
+
+		private void ControllerListener_InputPress(EventCode code) =>	AddEvent(code);
+		private void ControllerListener_InputRelease(EventCode code) => FinalizeEvent(code);
 
 		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
 			if(LiveEvents.Count == 0) {

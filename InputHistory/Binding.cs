@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -8,24 +9,34 @@ using System.Windows.Input;
 
 namespace InputHistory {
 	public class Binding {
-		private static object AsUriIfContainsADot(string s) => //returns the Uri representation of s if it contains a period
-				s.Contains('.') ? new Uri(s) : s;
 		public class Override {
-			
 			[JsonInclude]
 			public readonly string Representation;
 			[JsonInclude]
 			public readonly EventCode[] Codes;
+			[JsonIgnore]
+			public readonly Uri? uri;
+
+			[JsonIgnore]
+			public object PreferredRepresentation => (object?)uri ?? Representation;
 
 			public Override(string representation, EventCode[] codes) {
 				Representation = representation;
 				Codes = codes;
+				if(Representation.Contains('.')) {
+					uri = new Uri(Path.GetFullPath(Representation));
+				}
 			}
 		}
 		[JsonInclude]
 		public readonly string DefaultRepresentation;
 		[JsonInclude]
 		public readonly Override[] Overrides;
+		[JsonIgnore]
+		public readonly Uri? uri;
+		[JsonIgnore]
+		public object PreferredRepresentation => (object?)uri ?? DefaultRepresentation;
+
 		[JsonConstructor]
 		public Binding(string defaultRepresentation, Override[] overrides) {//Overrides with lower indices take precedence over higher-indexed Overrides
 			DefaultRepresentation = defaultRepresentation;
@@ -34,13 +45,16 @@ namespace InputHistory {
 		public Binding(string defaultRepresentation) {
 			DefaultRepresentation = defaultRepresentation;
 			Overrides = Array.Empty<Override>();
+			if(DefaultRepresentation.Contains('.')) {
+				uri = new Uri(Path.GetFullPath(DefaultRepresentation));
+			}
 		}
 
 		public object GetRepresentation(IEnumerable<EventCode> pressed) =>
-			AsUriIfContainsADot(Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault()?.Representation ?? DefaultRepresentation);
+			Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault()?.PreferredRepresentation ?? DefaultRepresentation;
 		public (object, Override?) GetRepresentationAndOverride(IEnumerable<EventCode> pressed) {
 			var o = Overrides.Where(o => o.Codes.Intersect(pressed).Any()).FirstOrDefault();
-			return (AsUriIfContainsADot(o?.Representation ?? DefaultRepresentation), o);
+			return (o?.PreferredRepresentation ?? PreferredRepresentation, o);
 		}
 	}
 }
