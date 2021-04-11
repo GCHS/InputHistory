@@ -142,5 +142,17 @@ namespace InputHistory.Properties {
                 this["ShowFatfingers"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SeparateOutDiagonalDPadInputs {
+            get {
+                return ((bool)(this["SeparateOutDiagonalDPadInputs"]));
+            }
+            set {
+                this["SeparateOutDiagonalDPadInputs"] = value;
+            }
+        }
     }
 }

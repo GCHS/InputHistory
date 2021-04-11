@@ -59,7 +59,8 @@ namespace InputHistory {
 			/*F*/EventCode.None, // Up | Down | Left | Right
 		};
 		readonly EdgeTrigger<byte> LeftTriggerWatcher, RightTriggerWatcher;
-		public ControllerListener() {
+		private readonly bool SeparateOutDiagonalDPadInputs;
+		public ControllerListener(bool separateOutDiagonalDPadInputs = true) {
 			dispatcher = Dispatcher.CurrentDispatcher;
 			LeftTriggerWatcher = new(
 				b => b > Gamepad.TriggerThreshold,
@@ -71,6 +72,7 @@ namespace InputHistory {
 				() => dispatcher.Invoke(() => InputPress?.Invoke(EventCode.XInputRT)),
 				() => dispatcher.Invoke(() => InputRelease?.Invoke(EventCode.XInputRT))
 			);
+			SeparateOutDiagonalDPadInputs = separateOutDiagonalDPadInputs;
 			updater = BackgroundUpdate();
 		}
 		private static double Hypot(double a, double b) => Math.Sqrt(a * a + b * b);
@@ -80,9 +82,9 @@ namespace InputHistory {
 		public void Update() {
 			var state = Controller.GetState();
 
-			#region nondirectional digital buttons
+			#region nondirectional digital buttons, d-pad if diagonals are not separate
 			var changed = state.Gamepad.Buttons ^ lastState.Gamepad.Buttons;
-			for(var f = GamepadButtonFlags.Start; f != GamepadButtonFlags.None; f = (GamepadButtonFlags)((ushort)f << 1)) {
+			for(var f = SeparateOutDiagonalDPadInputs ? GamepadButtonFlags.Start : GamepadButtonFlags.DPadUp; f != GamepadButtonFlags.None; f = (GamepadButtonFlags)((ushort)f << 1)) {
 				if((f & changed) != GamepadButtonFlags.None) {
 					if((f & state.Gamepad.Buttons) == GamepadButtonFlags.None) {
 						dispatcher.Invoke(() => InputRelease?.Invoke(EventEncoder.Encode(f)));
@@ -93,11 +95,14 @@ namespace InputHistory {
 			}
 			#endregion
 
-			#region d-pad
-			var dPadCode = DPadCodes[(ushort)(state.Gamepad.Buttons & DPadMask)];
-			if(dPadCode != lastDPadCode) {
-				if(lastDPadCode != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastDPadCode));
-				if(dPadCode != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(dPadCode));
+			#region d-pad if diagonals are separate
+			if(SeparateOutDiagonalDPadInputs) {
+				var dPadCode = DPadCodes[(ushort)(state.Gamepad.Buttons & DPadMask)];
+				if(dPadCode != lastDPadCode) {
+					if(lastDPadCode != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastDPadCode));
+					if(dPadCode != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(dPadCode));
+				}
+				lastDPadCode = dPadCode;
 			}
 			#endregion
 
@@ -130,7 +135,6 @@ namespace InputHistory {
 			lastState = state;
 			lastLStickOctant = lStickOctant;
 			lastRStickOctant = rStickOctant;
-			lastDPadCode = dPadCode;
 			#endregion
 		}
 		private Task BackgroundUpdate() => Task.Run(async () => {

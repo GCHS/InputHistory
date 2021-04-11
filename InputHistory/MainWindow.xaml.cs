@@ -56,7 +56,7 @@ namespace InputHistory {
 			WidestCharInDurationTextWidth = "0123456789msMS.".Select(c => glyphTypeface.CharacterToGlyphMap[c])
 				.Max(g => glyphTypeface.AdvanceWidths[g]) * FontSize;
 
-			ControllerListener = new();
+			ControllerListener = new(Properties.Settings.Default.SeparateOutDiagonalDPadInputs);
 		}
 
 		private void Window_Loaded(object sender, RoutedEventArgs e) {
