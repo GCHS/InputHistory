@@ -24,10 +24,10 @@ namespace InputHistory {
 	public partial class MainWindow : Window {
 		readonly List<HistoryEntry> LiveEvents = new();
 		readonly List<HistoryEntry> FinalizedEvents = new();
-		readonly double WidestCharWidth;
+		readonly double WidestCharInDurationTextWidth;
 		readonly int MaxEntries;
 		RawInputHandler RawInputHandler;
-		ControllerListener ControllerListener;
+		readonly ControllerListener ControllerListener;
 		readonly bool DoCoalesce, ShowFatfingers;
 		public MainWindow() {
 			InitializeComponent();
@@ -53,7 +53,8 @@ namespace InputHistory {
 			
 			var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 			typeface.TryGetGlyphTypeface(out var glyphTypeface);
-			WidestCharWidth = glyphTypeface.CharacterToGlyphMap.Max(cg => glyphTypeface.AdvanceWidths[cg.Value]) * FontSize;
+			WidestCharInDurationTextWidth = "0123456789msMS.".Select(c => glyphTypeface.CharacterToGlyphMap[c])
+				.Max(g => glyphTypeface.AdvanceWidths[g]) * FontSize;
 
 			ControllerListener = new();
 		}
@@ -72,8 +73,8 @@ namespace InputHistory {
 		private void ControllerListener_InputRelease(EventCode code) => FinalizeEvent(code);
 
 		private void CompositionTarget_Rendering(object? sender, EventArgs e) {
-			if(LiveEvents.Count == 0) {
-				LiveEvents.Add(new(EventCode.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharWidth));
+			if(LiveEvents.Count == 0 && HistoryEntry.IsNamed(EventCode.None)) {
+				LiveEvents.Add(new(EventCode.None, Array.Empty<EventCode>(), HistoryContainer, this, WidestCharInDurationTextWidth));
 			}
 			foreach(var ev in LiveEvents) ev.Update();
 			if(HistoryContainer.Children.Count > MaxEntries) {
@@ -117,7 +118,7 @@ namespace InputHistory {
 							}
 						}
 					}
-					LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharWidth));
+					LiveEvents.Add(new HistoryEntry(code, CurrentlyActiveCodes, HistoryContainer, this, WidestCharInDurationTextWidth));
 				}
 			}
 		}
