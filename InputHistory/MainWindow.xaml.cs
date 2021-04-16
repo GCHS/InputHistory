@@ -34,11 +34,15 @@ namespace InputHistory {
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 
 			try {
-				var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingRepresentations, HistoryEntry.Bindings.GetType()) as Dictionary<EventCode, Binding>;
+				JsonSerializerOptions options = new() { WriteIndented = true };
+				options.Converters.Add(new JsonStringEnumConverter());
+				var bindNames = JsonSerializer.Deserialize(Properties.Settings.Default.BindingRepresentations, HistoryEntry.Bindings.GetType(), options) as Dictionary<EventCode, Binding>;
 				if(bindNames is not null) {
 					HistoryEntry.Bindings = bindNames;
 				}
-			} catch(Exception) {}
+			} catch(Exception e) {
+				Title = e.Message;
+			}
 
 			Background = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.BgColor.R, Properties.Settings.Default.BgColor.G, Properties.Settings.Default.BgColor.B));
 			Foreground = new SolidColorBrush(Color.FromRgb(Properties.Settings.Default.FontColor.R, Properties.Settings.Default.FontColor.G, Properties.Settings.Default.FontColor.B));
