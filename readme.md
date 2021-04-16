@@ -1,6 +1,9 @@
 # InputHistory
 A visual input log for use as an [OBS](https://github.com/obsproject/obs-studio) source. The default settings are designed to work with a luma key filter to remove the black background of the window. Throw the source through a greyscale filter before using the luma key to remove the colored fringing of ClearType's subpixel font rendering.
 
+![mpv_UiN2VklcQ0](https://user-images.githubusercontent.com/32718344/114320153-2e950c00-9ada-11eb-82a9-e1819ec8806f.png)
+
+![A sample video of InputHistory atop gameplay](https://user-images.githubusercontent.com/32718344/114319618-d0ffc000-9ad7-11eb-88d3-3858504e43f3.mp4)
 
 ## Table of Contents  
 1. [Configuration](#Configuration)  
@@ -162,7 +165,7 @@ Default:
 This is the weird one.
 
 In the actual `user.config` file, the value in the settings is going to be something like
-```json
+```jsonc
 				<value>{
 	"None": {
     "DefaultRepresentation": "",
@@ -203,7 +206,7 @@ In the actual `user.config` file, the value in the settings is going to be somet
 				}</value>
 ```
 This particular setting is configured differently from the others. Between `<value>` and `</value>`, it uses a format known as JSON. Each entry in the `BindingRepresentations` list is structured as follows:
-```json
+```jsonc
 	/*Name of input:*/ "RightMouseButton": {//name must be between a pair of ""s.
 	//For a complete list of input names, see below
 	//Either text to display when this↑ input ("RightMouseButton") is pressed or a path to an image file to use instead:
@@ -251,7 +254,7 @@ This particular setting is configured differently from the others. Between `<val
 }
 ```
 Each input listed on the right side of the colons, the ones at the top level of the list, must be unique. So this is ok:
-```json
+```jsonc
 <value>{
 	"W": {
 		"DefaultRepresentation": "Forward",
@@ -271,7 +274,7 @@ Each input listed on the right side of the colons, the ones at the top level of 
 }</value>
 ```
 But this will cause your configuration to be ignored and overwritten with the default mapping when InputHistory is closed:
-```json
+```jsonc
 <value>{
 	"W": {
 		"DefaultRepresentation": "Forward",
