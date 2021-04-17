@@ -7,6 +7,8 @@ A visual input log for use as an [OBS](https://github.com/obsproject/obs-studio)
 
 ## Table of Contents  
 1. [Installation](#Installation)  
+  i. [Prerequisites](#Prerequisites)  
+  ii. [Procedure](#Procedure)  
 2. [Configuration](#Configuration)  
 3. [Limitations](#Limitations)
 4. [Settings](#Settings)  
@@ -24,6 +26,9 @@ A visual input log for use as an [OBS](https://github.com/obsproject/obs-studio)
 If all you're concerned about configuring is what image or text InputHistory displays when you press a button, go to [BindingRepresentations](#BindingRepresentations). Maybe bring a snack; it's a bit of a read.
 
 ## Installation
+### Prerequisites
+You will need [.NET 5](https://dotnet.microsoft.com/download) installed on your machine.
+### Procedure
 Unpack the `.zip` file in the latest [Release](https://github.com/GCHS/InputHistory/releases) to any location you like. When updating, unpack InputHistory to the same location; where it stores its settings file depends on where, on your drive, it's run from.
 
 ## Configuration
