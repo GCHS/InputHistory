@@ -1,14 +1,15 @@
 # InputHistory
 A visual input log for use as an [OBS](https://github.com/obsproject/obs-studio) source. The default settings are designed to work with a luma key filter to remove the black background of the window. Throw the source through a greyscale filter before using the luma key to remove the colored fringing of ClearType's subpixel font rendering.
 
-![mpv_UiN2VklcQ0](https://user-images.githubusercontent.com/32718344/114320153-2e950c00-9ada-11eb-82a9-e1819ec8806f.png)
+![A screenshot of InputHistory atop N++](https://user-images.githubusercontent.com/32718344/114320153-2e950c00-9ada-11eb-82a9-e1819ec8806f.png)
 
 ![A sample video of InputHistory atop gameplay](https://user-images.githubusercontent.com/32718344/114319618-d0ffc000-9ad7-11eb-88d3-3858504e43f3.mp4)
 
 ## Table of Contents  
-1. [Configuration](#Configuration)  
-2. [Limitations](#Limitations)
-3. [Settings](#Settings)  
+1. [Installation](#Installation)  
+2. [Configuration](#Configuration)  
+3. [Limitations](#Limitations)
+4. [Settings](#Settings)  
   i. [BgColor](#BgColor)  
   ii. [FontName](#FontName)  
 	iii. [FontSize](#FontSize)  
@@ -20,7 +21,10 @@ A visual input log for use as an [OBS](https://github.com/obsproject/obs-studio)
 	ix. [MaxEntries](#MaxEntries)  
 	x. [BindingRepresentations](#BindingRepresentations)  
 
-If all you're concerned about configuring is what image or text InputHistory displays when you press a button, go to [BindingRepresentations](#BindingRepresentations). Maybe bring a snack.
+If all you're concerned about configuring is what image or text InputHistory displays when you press a button, go to [BindingRepresentations](#BindingRepresentations). Maybe bring a snack; it's a bit of a read.
+
+## Installation
+Unpack the `.zip` file in the latest [Release](https://github.com/GCHS/InputHistory/releases) to any location you like. When updating, unpack InputHistory to the same location; where it stores its settings file depends on where, on your drive, it's run from.
 
 ## Configuration
 After running and closing InputHistory for the first time, the program will save a settings file named `user.config` to `%LOCALAPPDATA%\InputHistory\InputHistory_Url_{...}\{VersionString}`, where `{...}` is some alphanumeric string and `{VersionString}` is the current version of the progam. This is an XML file and can be opened in any text editor, although an editor with extra support for XML files (such as [VS Code](https://github.com/Microsoft/vscode)) will be helpful.
