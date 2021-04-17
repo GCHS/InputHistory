@@ -80,62 +80,64 @@ namespace InputHistory {
 		const GamepadButtonFlags DPadMask =
 			GamepadButtonFlags.DPadUp | GamepadButtonFlags.DPadDown | GamepadButtonFlags.DPadLeft | GamepadButtonFlags.DPadRight;
 		public void Update() {
-			var state = Controller.GetState();
+			if(Controller.IsConnected) {
+				var state = Controller.GetState();
 
-			#region nondirectional digital buttons, d-pad if diagonals are not separate
-			var changed = state.Gamepad.Buttons ^ lastState.Gamepad.Buttons;
-			for(var f = SeparateOutDiagonalDPadInputs ? GamepadButtonFlags.Start : GamepadButtonFlags.DPadUp; f != GamepadButtonFlags.None; f = (GamepadButtonFlags)((ushort)f << 1)) {
-				if((f & changed) != GamepadButtonFlags.None) {
-					if((f & state.Gamepad.Buttons) == GamepadButtonFlags.None) {
-						dispatcher.Invoke(() => InputRelease?.Invoke(EventEncoder.Encode(f)));
-					} else {
-						dispatcher.Invoke(() => InputPress?.Invoke(EventEncoder.Encode(f)));
+				#region nondirectional digital buttons, d-pad if diagonals are not separate
+				var changed = state.Gamepad.Buttons ^ lastState.Gamepad.Buttons;
+				for(var f = SeparateOutDiagonalDPadInputs ? GamepadButtonFlags.Start : GamepadButtonFlags.DPadUp; f != GamepadButtonFlags.None; f = (GamepadButtonFlags)((ushort)f << 1)) {
+					if((f & changed) != GamepadButtonFlags.None) {
+						if((f & state.Gamepad.Buttons) == GamepadButtonFlags.None) {
+							dispatcher.Invoke(() => InputRelease?.Invoke(EventEncoder.Encode(f)));
+						} else {
+							dispatcher.Invoke(() => InputPress?.Invoke(EventEncoder.Encode(f)));
+						}
 					}
 				}
-			}
-			#endregion
+				#endregion
 
-			#region d-pad if diagonals are separate
-			if(SeparateOutDiagonalDPadInputs) {
-				var dPadCode = DPadCodes[(ushort)(state.Gamepad.Buttons & DPadMask)];
-				if(dPadCode != lastDPadCode) {
-					if(lastDPadCode != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastDPadCode));
-					if(dPadCode != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(dPadCode));
+				#region d-pad if diagonals are separate
+				if(SeparateOutDiagonalDPadInputs) {
+					var dPadCode = DPadCodes[(ushort)(state.Gamepad.Buttons & DPadMask)];
+					if(dPadCode != lastDPadCode) {
+						if(lastDPadCode != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastDPadCode));
+						if(dPadCode != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(dPadCode));
+					}
+					lastDPadCode = dPadCode;
 				}
-				lastDPadCode = dPadCode;
+				#endregion
+
+				#region left stick
+				var lStickOctant = Hypot(state.Gamepad.LeftThumbX, state.Gamepad.LeftThumbY) > Gamepad.LeftThumbDeadZone ?
+					LeftStickOctantCodes[4 + (int)Math.Round(Math.Atan2(state.Gamepad.LeftThumbY, state.Gamepad.LeftThumbX) / (Math.PI / 4))]
+					: EventCode.None;
+				if(lStickOctant != lastLStickOctant) {
+					if(lastLStickOctant != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastLStickOctant));
+					if(lStickOctant != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(lStickOctant));
+				}
+				#endregion
+
+				#region right stick
+				var rStickOctant = Hypot(state.Gamepad.RightThumbX, state.Gamepad.RightThumbY) > Gamepad.RightThumbDeadZone ?
+					RightStickOctantCodes[4 + (int)Math.Round(Math.Atan2(state.Gamepad.RightThumbY, state.Gamepad.RightThumbX) / (Math.PI / 4))]
+					: EventCode.None;
+				if(rStickOctant != lastRStickOctant) {
+					if(lastRStickOctant != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastRStickOctant));
+					if(rStickOctant != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(rStickOctant));
+				}
+				#endregion
+
+				#region triggers
+				LeftTriggerWatcher.Update(state.Gamepad.LeftTrigger);
+				RightTriggerWatcher.Update(state.Gamepad.RightTrigger);
+				#endregion
+
+				#region update state
+				lastState = state;
+				lastLStickOctant = lStickOctant;
+				lastRStickOctant = rStickOctant;
+				#endregion
 			}
-			#endregion
-
-			#region left stick
-			var lStickOctant = Hypot(state.Gamepad.LeftThumbX, state.Gamepad.LeftThumbY) > Gamepad.LeftThumbDeadZone ?
-				LeftStickOctantCodes[4 + (int)Math.Round(Math.Atan2(state.Gamepad.LeftThumbY, state.Gamepad.LeftThumbX) / (Math.PI / 4))]
-				: EventCode.None;
-			if(lStickOctant != lastLStickOctant) {
-				if(lastLStickOctant != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastLStickOctant));
-				if(lStickOctant != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(lStickOctant));
-			}
-			#endregion
-
-			#region right stick
-			var rStickOctant = Hypot(state.Gamepad.RightThumbX, state.Gamepad.RightThumbY) > Gamepad.RightThumbDeadZone ?
-				RightStickOctantCodes[4 + (int)Math.Round(Math.Atan2(state.Gamepad.RightThumbY, state.Gamepad.RightThumbX) / (Math.PI / 4))]
-				: EventCode.None;
-			if(rStickOctant != lastRStickOctant) {
-				if(lastRStickOctant != EventCode.None) dispatcher.Invoke(() => InputRelease?.Invoke(lastRStickOctant));
-				if(rStickOctant != EventCode.None) dispatcher.Invoke(() => InputPress?.Invoke(rStickOctant));
-			}
-			#endregion
-
-			#region triggers
-			LeftTriggerWatcher.Update(state.Gamepad.LeftTrigger);
-			RightTriggerWatcher.Update(state.Gamepad.RightTrigger);
-			#endregion
-
-			#region update state
-			lastState = state;
-			lastLStickOctant = lStickOctant;
-			lastRStickOctant = rStickOctant;
-			#endregion
 		}
 		private Task BackgroundUpdate() => Task.Run(async () => {
 			while(true) {
