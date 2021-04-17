@@ -33,6 +33,12 @@ namespace InputHistory {
 			InitializeComponent();
 			CompositionTarget.Rendering += CompositionTarget_Rendering;
 
+			if(Properties.Settings.Default.SettingsMigrationRequired) {
+				Properties.Settings.Default.Upgrade();
+				Properties.Settings.Default.SettingsMigrationRequired = false;
+				Properties.Settings.Default.Save();
+			}
+
 			try {
 				JsonSerializerOptions options = new() { WriteIndented = true };
 				options.Converters.Add(new JsonStringEnumConverter());

@@ -154,5 +154,17 @@ namespace InputHistory.Properties {
                 this["SeparateOutDiagonalDPadInputs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SettingsMigrationRequired {
+            get {
+                return ((bool)(this["SettingsMigrationRequired"]));
+            }
+            set {
+                this["SettingsMigrationRequired"] = value;
+            }
+        }
     }
 }
